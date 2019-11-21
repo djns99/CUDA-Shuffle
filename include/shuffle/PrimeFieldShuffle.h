@@ -2,16 +2,18 @@
 #include <thrust/device_vector.h>
 
 #include <thrust/sequence.h>
-#include <thrust/random/linear_congruential_engine.h>
 
-class PrimeFieldShuffle
+#include "shuffle/Shuffle.h"
+
+template<class Container=thrust::device_vector<uint64_t>>
+class PrimeFieldShuffle : public Shuffle<Container>
 {
 private:
-	static int roundUpPower2(int a)
+	static uint64_t roundUpPower2(uint64_t a)
 	{
 		if (a & (a - 1))
 		{
-			int i;
+			uint64_t i;
 			for (i = 0; a > 1; i++) {
 				a >>= 1;
 			}
@@ -21,14 +23,14 @@ private:
 	}
 
 public:
-	static void shuffle(thrust::device_vector<uint64_t>& nums)
+	void shuffle(Container& nums, RandomGenerator& random_function) override
 	{
 		// Round up to power of two
 		uint64_t cap = roundUpPower2(nums.size());
 		// Choose an odd number so we know it is coprime with cap
-		uint64_t mul = (rand() * 2 + 1) % cap;
+		uint64_t mul = (random_function() * 2 + 1) % cap;
 		// Choose a shift
-		uint64_t shift = rand() % cap;
+		uint64_t shift = random_function() % cap;
 
 		thrust::device_vector<uint64_t> keys(nums.size());
 
