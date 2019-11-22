@@ -1,18 +1,20 @@
 #pragma once
 #include "RandomGenerator.h"
 
-template<class Container>
+template<class ContainerType>
 class Shuffle {
 public:
-	virtual void shuffle(Container& nums, RandomGenerator& random_function) = 0;
-	void shuffle(Container& nums) {
-		shuffle(nums, DefaultRandomGenerator());
+	using container_type = ContainerType;
+
+	virtual void shuffle(ContainerType& container, RandomGenerator& random_function) = 0;
+	void shuffle(ContainerType& container) {
+		shuffle(container, DefaultRandomGenerator());
 	};
-	void operator() (Container& nums, RandomGenerator& random_function) {
-		shuffle(nums, rand);
+	void operator() (ContainerType& container, RandomGenerator& random_function) {
+		shuffle(container, rand);
 	}
 
-	void operator() (Container& nums) {
-		shuffle(nums);
+	void operator() (ContainerType& container) {
+		shuffle(container);
 	}
 };

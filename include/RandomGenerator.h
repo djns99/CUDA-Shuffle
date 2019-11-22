@@ -35,5 +35,5 @@ public:
 		return random_function();
 	}
 private:
-	thrust::minstd_rand random_function;
+	thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U> random_function;
 };
