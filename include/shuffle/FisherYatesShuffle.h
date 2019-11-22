@@ -3,8 +3,8 @@
 
 #include "shuffle/Shuffle.h"
 
-template<class ContainerType = std::vector<uint64_t>>
-class FisherYatesShuffle : public Shuffle<ContainerType>
+template<class ContainerType = std::vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+class FisherYatesShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
 	void swap(ContainerType& container, uint64_t a, uint64_t b)
@@ -14,13 +14,20 @@ private:
 		container[b] = temp;
 	}
 public:
-	void shuffle(ContainerType& container, RandomGenerator& random_function) override
+	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed) override
 	{
-		const uint64_t capacity = container.size();
+		if (&in_container != &out_container)
+		{
+			// Copy if we are not doing an inplace operation
+			std::copy(in_container.begin(), in_container.end(), out_container.begin());
+		}
+		
+		RandomGenerator random_function(seed);
+		const uint64_t capacity = out_container.size();
 		for (uint64_t i = 0; i < capacity - 1; i++)
 		{
 			auto swap_range = capacity - i;
-			swap(container, i, i + (random_function() % swap_range));
+			swap(out_container, i, i + (random_function() % swap_range));
 		}
 	}
 };
