@@ -1,5 +1,4 @@
 #pragma once
-#include "RandomGenerator.h"
 
 template<class ContainerType, class RandomGenerator>
 class Shuffle {

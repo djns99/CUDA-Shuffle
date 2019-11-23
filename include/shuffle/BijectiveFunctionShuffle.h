@@ -7,6 +7,7 @@
 #include <thrust/copy.h>
 
 #include "shuffle/Shuffle.h"
+#include "DefaultRandomGenerator.h"
 
 template<class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class BijectiveFunctionShuffle : public Shuffle<ContainerType, RandomGenerator>

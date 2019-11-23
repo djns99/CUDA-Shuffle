@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "shuffle/Shuffle.h"
+#include "DefaultRandomGenerator.h"
 
 template<class ContainerType = std::vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class FisherYatesShuffle : public Shuffle<ContainerType, RandomGenerator>

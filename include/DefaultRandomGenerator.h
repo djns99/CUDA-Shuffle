@@ -1,5 +1,7 @@
 #pragma once
 #include <thrust/random/linear_congruential_engine.h>
+#include <thrust/random/subtract_with_carry_engine.h>
+#include <thrust/random/xor_combine_engine.h>
 #include <random>
 
 class DefaultRandomGenerator
@@ -29,25 +31,5 @@ public:
 		return random_function();
 	}
 private:
-	thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U> random_function;
-};
-
-class ConstantGenerator
-{
-public:
-	ConstantGenerator()
-		: constant(0)
-	{}
-
-	ConstantGenerator(uint64_t constant)
-		: constant(constant)
-	{}
-
-	__host__ __device__
-		uint64_t operator() ()
-	{
-		return constant;
-	}
-private:
-	uint64_t constant;
+	thrust::xor_combine_engine<thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U>, 0, thrust::ranlux48_base, 0> random_function;
 };

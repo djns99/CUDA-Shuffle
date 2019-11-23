@@ -3,6 +3,8 @@
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
+#include "DefaultRandomGenerator.h"
+#include "ConstantGenerator.h"
 #include <numeric>
 
 template <typename ShuffleFunction>

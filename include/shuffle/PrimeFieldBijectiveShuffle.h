@@ -33,9 +33,9 @@ private:
 		{
 			uint64_t i;
 			for (i = 0; a > 1; i++) {
-				a >>= 1;
+				a >>= 1ull;
 			}
-			return 1ul << (i + 1ul);
+			return 1ull << (i + 1ull);
 		}
 		return a;
 	}

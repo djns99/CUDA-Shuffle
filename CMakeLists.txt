@@ -7,8 +7,8 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set( CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 
-#add_executable(main main.cu)
-#target_compile_options(main PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>)
+add_executable(main main.cu)
+target_compile_options(main PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>)
 enable_testing()
 
 configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)

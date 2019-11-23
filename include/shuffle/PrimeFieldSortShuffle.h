@@ -18,9 +18,9 @@ private:
 		{
 			uint64_t i;
 			for (i = 0; a > 1; i++) {
-				a >>= 1;
+				a >>= 1ull;
 			}
-			return 1ul << (i + 1ul);
+			return 1ull << (i + 1ull);
 		}
 		return a;
 	}
@@ -31,7 +31,7 @@ public:
 		if (&in_container != &out_container)
 		{
 			// Copy if we are not doing an inplace operation
-			thrust::copy(in_container.begin(), in_container.begin() + num, out_container.begin());
+			thrust::copy(thrust::device, in_container.begin(), in_container.begin() + num, out_container.begin());
 		}
 
 		RandomGenerator random_function(seed);
@@ -45,12 +45,12 @@ public:
 		thrust::device_vector<uint64_t> keys(num);
 
 		// Initialise key vector with indexes
-		thrust::sequence(keys.begin(), keys.end());
+		thrust::sequence(thrust::device, keys.begin(), keys.end());
 		// Inplace transform
-		thrust::transform(keys.begin(), keys.end(), keys.begin(), [=] __host__ __device__(uint64_t val) -> uint64_t {
+		thrust::transform(thrust::device, keys.begin(), keys.end(), keys.begin(), [=] __host__ __device__(uint64_t val) -> uint64_t {
 			return (val * mul + shift) % cap;
 		});
 		// Sort by keys
-		thrust::sort_by_key(keys.begin(), keys.end(), out_container.begin());
+		thrust::sort_by_key(thrust::device, keys.begin(), keys.end(), out_container.begin());
 	}
 };
