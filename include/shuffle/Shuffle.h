@@ -5,6 +5,7 @@ template<class ContainerType, class RandomGenerator>
 class Shuffle {
 public:
 	using container_type = ContainerType;
+	using random_generator = RandomGenerator;
 
 	/**
 	 * Performs random shuffle using the specified seed

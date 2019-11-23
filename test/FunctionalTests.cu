@@ -11,6 +11,7 @@ protected:
 	ShuffleFunction shuffle;
 	DefaultRandomGenerator gen;
 	using ContainerType = ShuffleFunction::Shuffle::container_type;
+	using RandomGenerator = ShuffleFunction::Shuffle::random_generator;
 	ContainerType shuffled_container;
 	ContainerType reference_container;
 	uint64_t num_elements = 100;
@@ -41,9 +42,13 @@ protected:
 		checkSameOrder(a, b);
 	}
 
-	constexpr bool supportsInPlace()
+	bool supportsInPlace()
 	{
 		return shuffle.supportsInPlace();
+	}
+
+	bool isConstantRandomGenerator() {
+		return std::is_same<RandomGenerator, ConstantGenerator>::value;
 	}
 };
 
@@ -125,4 +130,29 @@ TYPED_TEST(FunctionalTests, ShuffleInplace)
 	shuffle(reference_container, shuffled_container, 0);
 	shuffle(copy_container, copy_container, 0);
 	checkSameOrder(shuffled_container, copy_container);
+}
+
+TYPED_TEST(FunctionalTests, ChangesOrder)
+{
+	if (isConstantRandomGenerator())
+	{
+		GTEST_SKIP();
+		return;
+	}
+	shuffle(reference_container, shuffled_container, gen());
+	ASSERT_FALSE(std::equal(reference_container.begin(), reference_container.end(), shuffled_container.begin()));
+}
+
+TYPED_TEST(FunctionalTests, SeedsChangeOrder)
+{
+	if (isConstantRandomGenerator())
+	{
+		GTEST_SKIP();
+		return;
+	}
+	ContainerType copy_container(num_elements, 0);
+	shuffle(reference_container, shuffled_container, 0);
+	shuffle(reference_container, copy_container, 1);
+	// Different seeds yield different values
+	ASSERT_FALSE(std::equal(reference_container.begin(), reference_container.end(), shuffled_container.begin()));
 }
