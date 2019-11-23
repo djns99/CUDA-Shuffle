@@ -9,7 +9,7 @@
 #include "shuffle/Shuffle.h"
 
 template<class ContainerType=thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-class PrimeFieldShuffle : public Shuffle<ContainerType, RandomGenerator>
+class PrimeFieldSortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
 	static uint64_t roundUpPower2(uint64_t a)

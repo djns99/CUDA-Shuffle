@@ -6,4 +6,5 @@ function(create_test test_name)
 endfunction(create_test)
 
 create_test(FunctionalTests)
+create_test(RandomnessTests)
 

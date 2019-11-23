@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "shuffle/FisherYatesShuffle.h"
-#include "shuffle/PrimeFieldShuffle.h"
+#include "shuffle/PrimeFieldSortShuffle.h"
+#include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include <numeric>
 
@@ -42,10 +43,12 @@ protected:
 };
 
 using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>,
-									  PrimeFieldShuffle<>,
+									  PrimeFieldSortShuffle<>,
+									  PrimeFieldBijectiveShuffle<>,
 	                                  SortShuffle<>, 
 									  FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
-	                                  PrimeFieldShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+	                                  PrimeFieldSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+									  PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 	                                  SortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE(FunctionalTests, ShuffleTypes);
 
