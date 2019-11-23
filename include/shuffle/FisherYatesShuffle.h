@@ -14,19 +14,18 @@ private:
 		container[b] = temp;
 	}
 public:
-	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed) override
+	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num) override
 	{
 		if (&in_container != &out_container)
 		{
 			// Copy if we are not doing an inplace operation
-			std::copy(in_container.begin(), in_container.end(), out_container.begin());
+			std::copy(in_container.begin(), in_container.begin() + num, out_container.begin());
 		}
 		
 		RandomGenerator random_function(seed);
-		const uint64_t capacity = out_container.size();
-		for (uint64_t i = 0; i < capacity - 1; i++)
+		for (uint64_t i = 0; i < num - 1; i++)
 		{
-			auto swap_range = capacity - i;
+			auto swap_range = num - i;
 			swap(out_container, i, i + (random_function() % swap_range));
 		}
 	}

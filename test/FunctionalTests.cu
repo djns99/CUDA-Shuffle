@@ -27,7 +27,7 @@ protected:
 	{
 		for (uint64_t i = 0; i < a.size(); i++)
 		{
-			ASSERT_EQ(a[i], b[i]);
+			ASSERT_EQ(a[i], b[i]) << "At index " << i;
 		}
 	}
 
@@ -39,6 +39,11 @@ protected:
 		thrust::sort(b.begin(), b.end());
 
 		checkSameOrder(a, b);
+	}
+
+	constexpr bool supportsInPlace()
+	{
+		return shuffle.supportsInPlace();
 	}
 };
 
@@ -80,5 +85,44 @@ TYPED_TEST(FunctionalTests, DefaultSeedIsZero)
 	shuffle(reference_container, shuffled_container);
 	shuffle(reference_container, copy_container, 0);
 
+	checkSameOrder(shuffled_container, copy_container);
+}
+
+TYPED_TEST(FunctionalTests, ShuffleOne)
+{
+	// Copy reference vector
+	std::copy(reference_container.begin() + 1, reference_container.end(), shuffled_container.begin() + 1);
+	// Make first location invalid
+	shuffled_container[0] = num_elements + 1;
+	shuffle(reference_container, shuffled_container, gen(), 1);
+	checkSameOrder(reference_container, shuffled_container);
+}
+
+TYPED_TEST(FunctionalTests, ShuffleHalf)
+{
+	const size_t shuffle_size = num_elements / 2;
+	// Copy reference vector into second half
+	std::copy(reference_container.begin() + shuffle_size, reference_container.end(), shuffled_container.begin() + shuffle_size);
+	shuffle(reference_container, shuffled_container, gen(), shuffle_size);
+
+	// Check second half was not changed
+	for (uint64_t i = shuffle_size; i < num_elements; i++)
+	{
+		ASSERT_EQ(reference_container[i], shuffled_container[i]) << "At index " << i;
+	}
+
+	checkSameValues(reference_container, shuffled_container);
+}
+
+TYPED_TEST(FunctionalTests, ShuffleInplace)
+{
+	if(!supportsInPlace())
+	{
+		GTEST_SKIP();
+		return;
+	}
+	ContainerType copy_container(reference_container.begin(), reference_container.end());
+	shuffle(reference_container, shuffled_container, 0);
+	shuffle(copy_container, copy_container, 0);
 	checkSameOrder(shuffled_container, copy_container);
 }

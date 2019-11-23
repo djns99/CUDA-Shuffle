@@ -26,23 +26,23 @@ private:
 	}
 
 public:
-	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed) override
+	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num) override
 	{
 		if (&in_container != &out_container)
 		{
 			// Copy if we are not doing an inplace operation
-			thrust::copy(in_container.begin(), in_container.end(), out_container.begin());
+			thrust::copy(in_container.begin(), in_container.begin() + num, out_container.begin());
 		}
 
 		RandomGenerator random_function(seed);
 		// Round up to power of two
-		uint64_t cap = roundUpPower2(out_container.size());
+		uint64_t cap = roundUpPower2(num);
 		// Choose an odd number so we know it is coprime with cap
 		uint64_t mul = (random_function() * 2 + 1) % cap;
 		// Choose a shift
 		uint64_t shift = random_function() % cap;
 
-		thrust::device_vector<uint64_t> keys(out_container.size());
+		thrust::device_vector<uint64_t> keys(num);
 
 		// Initialise key vector with indexes
 		thrust::sequence(keys.begin(), keys.end());

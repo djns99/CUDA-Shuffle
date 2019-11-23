@@ -12,13 +12,13 @@ template<class BijectiveFunction, class ContainerType = thrust::device_vector<ui
 class BijectiveFunctionShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:
-	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed) override
+	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num) override
 	{
 		assert(&in_container != &out_container);
 
 		RandomGenerator random_function(seed);
 		BijectiveFunction mapping_function;
-		mapping_function.init(out_container.size(), random_function);
+		mapping_function.init(num, random_function);
 
 		thrust::counting_iterator<uint64_t> indexes(0);
 		// Inplace transform
@@ -26,9 +26,14 @@ public:
 			// Call mapping functions
 			return mapping_function(val);
 		});
-		auto transform_it_end = transform_it_begin + out_container.size();
+		auto transform_it_end = transform_it_begin + num;
 		thrust::copy(thrust::make_permutation_iterator(in_container.begin(), transform_it_begin),
 			thrust::make_permutation_iterator(in_container.begin(), transform_it_end),
 			out_container.begin());
+	}
+
+	bool supportsInPlace() override
+	{
+		return false;
 	}
 };

@@ -11,16 +11,16 @@ template<class ContainerType = thrust::device_vector<uint64_t>, class RandomGene
 class SortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:
-	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed) override
+	void shuffle(const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num) override
 	{
 		if (&in_container != &out_container)
 		{
 			// Copy if we are not doing an inplace operation
-			thrust::copy(in_container.begin(), in_container.end(), out_container.begin());
+			thrust::copy(in_container.begin(), in_container.begin() + num, out_container.begin());
 		}
 
 		// Initialise key vector with random values
-		thrust::device_vector<uint64_t> keys(out_container.size());
+		thrust::device_vector<uint64_t> keys(num);
 		RandomGenerator random_generator(seed);
 		std::generate(keys.begin(), keys.end(), random_generator);
 
