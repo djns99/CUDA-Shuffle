@@ -57,7 +57,7 @@ protected:
 using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>,
 									  PrimeFieldSortShuffle<>,
 									  PrimeFieldBijectiveShuffle<>,
-	                                  SortShuffle<>, 
+	                                  SortShuffle<>,
 									  FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
 	                                  PrimeFieldSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 									  PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,

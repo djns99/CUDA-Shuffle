@@ -2,4 +2,3 @@ cmake-build-*
 .idea
 /.vs
 /out/build/x64-Debug
-/test/NIST-Tests
