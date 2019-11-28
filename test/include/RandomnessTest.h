@@ -36,6 +36,11 @@ class RandomnessTests : public ::testing::Test
     void runShuffle()
     {
         shuffle( source_container, shuffled_container, gen() );
+    }    
+	
+	void runShuffle( uint64_t count )
+    {
+        shuffle( source_container, shuffled_container, gen(), count );
     }
 
     uint64_t countOnes( uint64_t start_index, uint64_t num_elements )
