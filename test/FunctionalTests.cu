@@ -2,6 +2,8 @@
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
+#include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "DefaultRandomGenerator.h"
 #include "ConstantGenerator.h"
@@ -57,10 +59,14 @@ protected:
 using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>,
 									  PrimeFieldSortShuffle<>,
 									  PrimeFieldBijectiveShuffle<>,
+									  FeistelBijectiveShuffle<>,
+									  SPNetworkBijectiveShuffle<>,
 	                                  SortShuffle<>,
 									  FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
 	                                  PrimeFieldSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 									  PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+									  FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+									  SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 	                                  SortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE(FunctionalTests, ShuffleTypes);
 
@@ -156,5 +162,5 @@ TYPED_TEST(FunctionalTests, SeedsChangeOrder)
 	shuffle(reference_container, shuffled_container, 0);
 	shuffle(reference_container, copy_container, 1);
 	// Different seeds yield different values
-	ASSERT_FALSE(std::equal(reference_container.begin(), reference_container.end(), shuffled_container.begin()));
+    ASSERT_FALSE( std::equal( copy_container.begin(), copy_container.end(), shuffled_container.begin() ) );
 }

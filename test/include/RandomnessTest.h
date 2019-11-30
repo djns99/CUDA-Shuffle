@@ -5,6 +5,8 @@
 #include "nist-utils/matrix.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
+#include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "gtest/gtest.h"
@@ -80,6 +82,7 @@ ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::shuff
 template <typename ShuffleFunction>
 ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::source_container;
 
-using ShuffleTypes =
-    ::testing::Types<FisherYatesShuffle<>, PrimeFieldBijectiveShuffle<>, RandomReverseShuffle<>>;
+//using ShuffleTypes =
+//    ::testing::Types<FisherYatesShuffle<>, PrimeFieldBijectiveShuffle<>, FeistelBijectiveShuffle<>, RandomReverseShuffle<>>;
+using ShuffleTypes = ::testing::Types<SPNetworkBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
