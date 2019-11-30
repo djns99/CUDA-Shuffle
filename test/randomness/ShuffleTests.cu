@@ -55,20 +55,26 @@ TYPED_TEST( RandomnessTests, EvenSpacingBetweenOccurances )
     const uint64_t shuffle_size = 10;
     const uint64_t num_samples = 10000;
 
+    thrust::host_vector<uint64_t> h_results( num_samples * shuffle_size, 0 );
     std::vector<std::vector<std::vector<uint64_t>>> distance_between(shuffle_size, std::vector<std::vector<uint64_t>>(shuffle_size, std::vector<uint64_t>(shuffle_size, 0))); 
     for( uint64_t i = 0; i < num_samples; i++ )
     {
         runShuffle( shuffle_size );
-        for(uint64_t i = 0; i < shuffle_size - 1; i++)
-		{
-			for(uint64_t j = 1; j < shuffle_size - i; j++)
-			{
-				uint64_t val_1 = shuffled_container[i];
-				uint64_t val_2 = shuffled_container[(i + j) % shuffle_size];
-				distance_between[val_1][val_2][j]++;
-				distance_between[val_2][val_1][shuffle_size - j]++;
-			}
-		}
+        thrust::copy( shuffled_container.begin(), shuffled_container.begin() + shuffle_size, h_results.begin() + i * shuffle_size );
+    }
+
+	for( uint64_t sample = 0; sample < num_samples; sample++ )
+    {
+        for( uint64_t i = 0; i < shuffle_size - 1; i++ )
+        {
+            for( uint64_t j = 1; j < shuffle_size - i; j++ )
+            {
+                uint64_t val_1 = h_results[sample * shuffle_size + i];
+                uint64_t val_2 = h_results[sample * shuffle_size + ( i + j ) % shuffle_size];
+                distance_between[val_1][val_2][j]++;
+                distance_between[val_2][val_1][shuffle_size - j]++;
+            }
+        }
     }
 
 	const double expected_occurances = num_samples / (shuffle_size - 1);

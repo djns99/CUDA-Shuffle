@@ -57,17 +57,13 @@ protected:
 };
 
 using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>,
-									  PrimeFieldSortShuffle<>,
 									  PrimeFieldBijectiveShuffle<>,
 									  FeistelBijectiveShuffle<>,
 									  SPNetworkBijectiveShuffle<>,
-	                                  SortShuffle<>,
 									  FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
-	                                  PrimeFieldSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 									  PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
 									  FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-									  SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-	                                  SortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
+									  SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE(FunctionalTests, ShuffleTypes);
 
 TYPED_TEST(FunctionalTests, SameLength)
@@ -131,7 +127,7 @@ TYPED_TEST(FunctionalTests, ShuffleInplace)
 {
 	if(!supportsInPlace())
 	{
-		GTEST_SKIP();
+		// GTEST_SKIP();
 		return;
 	}
 	ContainerType copy_container(reference_container.begin(), reference_container.end());
@@ -144,7 +140,7 @@ TYPED_TEST(FunctionalTests, ChangesOrder)
 {
 	if (isConstantRandomGenerator())
 	{
-		GTEST_SKIP();
+        // GTEST_SKIP();
 		return;
 	}
 	shuffle(reference_container, shuffled_container, gen());
@@ -155,7 +151,7 @@ TYPED_TEST(FunctionalTests, SeedsChangeOrder)
 {
 	if (isConstantRandomGenerator())
 	{
-		GTEST_SKIP();
+        // GTEST_SKIP();
 		return;
 	}
 	ContainerType copy_container(num_elements, 0);

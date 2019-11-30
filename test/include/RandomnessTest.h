@@ -82,7 +82,6 @@ ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::shuff
 template <typename ShuffleFunction>
 ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::source_container;
 
-//using ShuffleTypes =
-//    ::testing::Types<FisherYatesShuffle<>, PrimeFieldBijectiveShuffle<>, FeistelBijectiveShuffle<>, RandomReverseShuffle<>>;
-using ShuffleTypes = ::testing::Types<SPNetworkBijectiveShuffle<>>;
+using ShuffleTypes =
+    ::testing::Types<FisherYatesShuffle<>, SPNetworkBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
