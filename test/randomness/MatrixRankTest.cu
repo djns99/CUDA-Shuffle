@@ -4,13 +4,13 @@
 
 TYPED_TEST( RandomnessTests, MatrixRank )
 {
-    runShuffle();
+    this->runShuffle();
 
     // Use the first 64k elements
     const uint64_t num_elements = 1ull << 16ull;
-    const uint64_t num_total_bits = num_elements * usable_bits;
+    const uint64_t num_total_bits = num_elements * this->usable_bits;
 
-    std::vector<bool> input_stream = toVectorBool( num_total_bits );
+    std::vector<bool> input_stream = this->toVectorBool( num_total_bits );
 
     const int max_rank = 32;
     const uint64_t rows = max_rank;
@@ -66,5 +66,5 @@ TYPED_TEST( RandomnessTests, MatrixRank )
     double p_score = exp( -chi_squared / 2.e0 );
 
     std::cout << "P Score: " << p_score << std::endl;
-    ASSERT_GT( p_score, p_score_significance );
+    ASSERT_GT( p_score, this->p_score_significance );
 }

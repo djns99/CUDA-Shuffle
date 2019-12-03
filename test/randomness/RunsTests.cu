@@ -3,14 +3,14 @@
 TYPED_TEST( RandomnessTests, BitRuns )
 {
     // Use 256k elements to shuffle
-    runShuffle();
+    this->runShuffle();
 
     // Use the first 64k elements
     const uint64_t num_elements = 1ull << 16ull;
-    const uint64_t num_total_bits = num_elements * usable_bits;
+    const uint64_t num_total_bits = num_elements * this->usable_bits;
 
     // Pre-requisite the correct percentage of 1s
-    uint64_t num_ones = countOnes( 0, num_elements );
+    uint64_t num_ones = this->countOnes( 0, num_elements );
     double percent_ones = (double)num_ones / (double)num_total_bits;
     ASSERT_LT( abs( percent_ones - 0.5 ), 2.0 / sqrt( num_total_bits ) )
         << "Failed pre-requisite test";
@@ -19,12 +19,12 @@ TYPED_TEST( RandomnessTests, BitRuns )
     uint64_t last_word = 0;
     for( uint64_t i = 0; i < num_elements; i++ )
     {
-        uint64_t word = shuffled_container[i];
+        uint64_t word = this->shuffled_container[i];
         if( i != 0 )
             total_runs += ( word & 1ull ) != ( last_word >> 63ull );
 
         last_word = word;
-        for( uint64_t j = 1; j < usable_bits; j++ )
+        for( uint64_t j = 1; j < this->usable_bits; j++ )
         {
             if( ( ( word >> j ) & 1 ) != ( ( word >> ( j - 1 ) ) & 1 ) )
                 total_runs++;
@@ -36,16 +36,16 @@ TYPED_TEST( RandomnessTests, BitRuns )
     double p_score = erfc( numerator / denomenator );
 
     std::cout << "P Score: " << p_score << std::endl;
-    ASSERT_GT( p_score, p_score_significance );
+    ASSERT_GT( p_score, this->p_score_significance );
 }
 
 TYPED_TEST( RandomnessTests, LongestRunOfOnes )
 {
-    runShuffle();
+    this->runShuffle();
 
     // Use the first 64k elements
     const uint64_t num_elements = 1ull << 16ull;
-    const uint64_t num_total_bits = num_elements * usable_bits;
+    const uint64_t num_total_bits = num_elements * this->usable_bits;
 
     ASSERT_GT( num_total_bits, 128 );
 
@@ -89,7 +89,7 @@ TYPED_TEST( RandomnessTests, LongestRunOfOnes )
         pi[6] = 0.0727;
     }
 
-    auto bits = toVectorBool( num_total_bits );
+    auto bits = this->toVectorBool( num_total_bits );
     uint64_t num_blocks = num_total_bits / bits_in_block;
     std::vector<uint64_t> bucket_frequencies( bucket_counts.size(), 0 );
     for( uint64_t i = 0; i < num_blocks; i++ )
@@ -129,5 +129,5 @@ TYPED_TEST( RandomnessTests, LongestRunOfOnes )
     double p_score = cephes_igamc( (double)( bucket_counts.size() / 2.0 ), chi2 / 2.0 );
 
     std::cout << "P Score: " << p_score << std::endl;
-    ASSERT_GT( p_score, p_score_significance );
+    ASSERT_GT( p_score, this->p_score_significance );
 }

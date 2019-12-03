@@ -141,10 +141,7 @@ void populate_matrix( int rows, int cols, int matrix_id, const std::vector<bool>
     }
 }
 
-std::vector<std::vector<bool>> create_and_populate_matrix( int rows,
-                                                           int cols,
-                                                           int matrix_id,
-                                                           const std::vector<bool>& input )
+std::vector<std::vector<bool>> create_and_populate_matrix( int rows, int cols, int matrix_id, const std::vector<bool>& input )
 {
     std::vector<std::vector<bool>> res;
     uint64_t start_idx = matrix_id * rows * cols;

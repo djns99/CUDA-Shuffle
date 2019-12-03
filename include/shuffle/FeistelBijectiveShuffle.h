@@ -63,27 +63,27 @@ private:
         uint32_t new_val = 0;
         for( uint64_t i = 0; i <= side_bits - 4; i += 4 )
         {
-            new_val = ( new_val << 4 ) | sbox16(( value >> i ) & 0xF);
+            new_val = ( new_val << 4 ) | sbox16( ( value >> i ) & 0xF );
         }
         return new_val & side_mask;
     }
 
-   // __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
-   // {
-   //     value ^= key;
-   //     for( uint64_t i = 0; i < 5; i++ )
-   //     {
-   //         uint64_t key_region = ( key >> ( i * 12 ) ) & 0xFFF;
-   //         uint64_t shift1 = key_region & 0x3F;
-   //         uint64_t shift2 = key_region >> 6;
-   //         value ^= sbox256[( value >> shift1 ) & 0xFF] << shift2;
-   //     }
-   //     for( uint64_t i = 0; i < 64; i += side_bits )
-   //     {
-			//value ^= (value >> i) & side_mask;
-   //     }
-   //     return value & side_mask;
-   // }
+    // __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
+    // {
+    //     value ^= key;
+    //     for( uint64_t i = 0; i < 5; i++ )
+    //     {
+    //         uint64_t key_region = ( key >> ( i * 12 ) ) & 0xFFF;
+    //         uint64_t shift1 = key_region & 0x3F;
+    //         uint64_t shift2 = key_region >> 6;
+    //         value ^= sbox256[( value >> shift1 ) & 0xFF] << shift2;
+    //     }
+    //     for( uint64_t i = 0; i < 64; i += side_bits )
+    //     {
+    // value ^= (value >> i) & side_mask;
+    //     }
+    //     return value & side_mask;
+    // }
 
     //  __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
     //  {
@@ -123,8 +123,8 @@ private:
     uint64_t capacity;
     uint64_t key[num_rounds];
 
-	
-	__host__ __device__ uint8_t sbox16( uint8_t index ) const
+
+    __host__ __device__ uint8_t sbox16( uint8_t index ) const
     {
         static const uint8_t sbox16[16] = { 0x7, 0x5, 0xD, 0x8, 0x9, 0xA, 0xF, 0x3,
                                             0x6, 0x1, 0xE, 0x0, 0xC, 0x4, 0x2, 0xB };

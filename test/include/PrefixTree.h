@@ -1,9 +1,9 @@
 #pragma once
+#include <assert.h>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <vector>
-#include <assert.h>
 
 class PrefixTreeNode
 {
@@ -18,7 +18,8 @@ public:
             return;
         }
         assert( !leaf );
-        auto child_it = getOrInsert<std::unique_ptr<PrefixTreeNode>>( children, *begin, std::make_unique<PrefixTreeNode> );
+        auto child_it = getOrInsert<std::unique_ptr<PrefixTreeNode>>( children, *begin,
+                                                                      std::make_unique<PrefixTreeNode> );
         child_it->second->add( begin + 1, end );
     }
 
@@ -49,12 +50,23 @@ public:
         return res;
     }
 
-	uint64_t getTotalChildren()
+    uint64_t getTotalChildren()
     {
         return total_children;
     }
 
 private:
+    template <class Value>
+    auto getOrInsert( std::map<uint64_t, Value>& map, uint64_t key, std::function<Value()> gen )
+    {
+        auto child_it = map.lower_bound( key );
+        if( child_it == map.end() || child_it->first != key )
+        {
+            child_it = map.emplace_hint( child_it, key, gen() );
+        }
+        return child_it;
+    }
+
     void frequencyPerLevel( std::vector<std::map<uint64_t, uint64_t>>& vec, uint64_t depth )
     {
         if( leaf )
@@ -73,17 +85,6 @@ private:
             child.second->frequencyPerLevel( vec, depth + 1 );
         }
     }
-
-	template<class Value>
-    auto getOrInsert( std::map<uint64_t, Value>& map, uint64_t key, std::function<Value()> gen )
-    {
-        auto child_it = map.lower_bound( key );
-        if( child_it == map.end() || child_it->first != key )
-        {
-            child_it = map.emplace_hint( child_it, key, gen() );
-        }
-        return child_it;
-	}
 
     uint64_t total_children = 0;
     bool leaf = false;

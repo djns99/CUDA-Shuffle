@@ -3,24 +3,29 @@
 #include "RandomReverseShuffle.h"
 #include "nist-utils/cephes.h"
 #include "nist-utils/matrix.h"
+#include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
-#include "shuffle/FeistelBijectiveShuffle.h"
-#include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
+#include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "gtest/gtest.h"
 #include <cmath>
+#ifdef _MSC_VER
 #include <intrin.h>
+#define popcnt64 __popcnt64
+#else
+#define popcnt64 __builtin_popcountll
+#endif
 #include <numeric>
 
 template <typename ShuffleFunction>
 class RandomnessTests : public ::testing::Test
 {
-    protected:
+protected:
     ShuffleFunction shuffle;
     static DefaultRandomGenerator gen;
-    using ContainerType = ShuffleFunction::Shuffle::container_type;
+    typedef typename ShuffleFunction::Shuffle::container_type ContainerType;
     static ContainerType shuffled_container;
     static ContainerType source_container;
     static constexpr uint64_t usable_bits = 24ull;
@@ -38,9 +43,9 @@ class RandomnessTests : public ::testing::Test
     void runShuffle()
     {
         shuffle( source_container, shuffled_container, gen() );
-    }    
-	
-	void runShuffle( uint64_t count )
+    }
+
+    void runShuffle( uint64_t count )
     {
         shuffle( source_container, shuffled_container, gen(), count );
     }
@@ -49,7 +54,7 @@ class RandomnessTests : public ::testing::Test
     {
         uint64_t num_ones = 0;
         for( uint64_t j = 0; j < num_elements; j++ )
-            num_ones += __popcnt64( shuffled_container[start_index + j] );
+            num_ones += popcnt64( shuffled_container[start_index + j] );
         return num_ones;
     }
 
@@ -78,10 +83,16 @@ class RandomnessTests : public ::testing::Test
 template <typename ShuffleFunction>
 DefaultRandomGenerator RandomnessTests<ShuffleFunction>::gen;
 template <typename ShuffleFunction>
-ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::shuffled_container;
+RandomnessTests<ShuffleFunction>::ContainerType RandomnessTests<ShuffleFunction>::shuffled_container;
 template <typename ShuffleFunction>
-ShuffleFunction::Shuffle::container_type RandomnessTests<ShuffleFunction>::source_container;
+RandomnessTests<ShuffleFunction>::ContainerType RandomnessTests<ShuffleFunction>::source_container;
+template <typename ShuffleFunction>
+constexpr uint64_t RandomnessTests<ShuffleFunction>::usable_bits;
+// ~32 million elements in array
+template <typename ShuffleFunction>
+constexpr uint64_t RandomnessTests<ShuffleFunction>::max_num_elements;
+template <typename ShuffleFunction>
+constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
-using ShuffleTypes =
-    ::testing::Types<FisherYatesShuffle<>, SPNetworkBijectiveShuffle<>>;
+using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>, SPNetworkBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

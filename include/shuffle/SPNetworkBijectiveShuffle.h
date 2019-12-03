@@ -57,7 +57,7 @@ private:
     }
 
     template <uint64_t m, int k>
-    static inline uint64_t swapbits( uint64_t p )
+    __host__ __device__ static inline uint64_t swapbits( uint64_t p )
     {
         uint64_t q = ( ( p >> k ) ^ p ) & m;
         return p ^ q ^ ( q << k );
@@ -95,16 +95,16 @@ private:
         uint64_t i;
         for( i = 0; i <= num_bits - 8; i += 8 )
         {
-            output |= sbox256(( state >> i ) & 0xFF) << i;
+            output |= sbox256( ( state >> i ) & 0xFF ) << i;
         }
         if( i <= num_bits - 4 )
         {
-            output |= sbox16(( state >> i ) & 0xF) << i;
+            output |= sbox16( ( state >> i ) & 0xF ) << i;
             i += 4;
         }
         if( i <= num_bits - 2 )
         {
-            output |= sbox4(( state >> i ) & 0x3) << i;
+            output |= sbox4( ( state >> i ) & 0x3 ) << i;
         }
         return permuteBits( output ) ^ key[round];
     }
@@ -115,7 +115,7 @@ private:
     uint64_t key[num_rounds];
 
 
-	__host__ __device__ uint8_t sbox4( uint8_t index ) const
+    __host__ __device__ uint8_t sbox4( uint8_t index ) const
     {
         static const uint8_t sbox4[4] = { 0x3, 0x2, 0x0, 0x1 };
         return sbox4[index];

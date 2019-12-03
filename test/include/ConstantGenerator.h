@@ -3,19 +3,19 @@
 class ConstantGenerator
 {
 public:
-	ConstantGenerator()
-		: constant(0)
-	{}
+    ConstantGenerator() : constant( 0 )
+    {
+    }
 
-	ConstantGenerator(uint64_t constant)
-		: constant(constant)
-	{}
+    ConstantGenerator( uint64_t constant ) : constant( constant )
+    {
+    }
 
-	__host__ __device__
-		uint64_t operator() ()
-	{
-		return constant;
-	}
+    __host__ __device__ uint64_t operator()()
+    {
+        return constant;
+    }
+
 private:
-	uint64_t constant;
+    uint64_t constant;
 };
