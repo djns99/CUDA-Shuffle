@@ -23,7 +23,7 @@ public:
             for( uint64_t i = 0; i < num_rounds; i++ )
             {
                 state = doRound( state, i );
-                assert( state < ( 1ul << num_bits ) );
+                assert( state < ( 1ull << num_bits ) );
             }
         } while( state >= capacity );
         return state;

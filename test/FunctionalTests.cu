@@ -61,10 +61,12 @@ public:
 
 using ShuffleTypes =
     ::testing::Types<FisherYatesShuffle<>,
+					 FisherYatesShuffleGPU<>,
                      PrimeFieldBijectiveShuffle<>,
                      FeistelBijectiveShuffle<>,
                      SPNetworkBijectiveShuffle<>,
                      FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
+                     FisherYatesShuffleGPU<uint64_t, ConstantGenerator>,
                      PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
