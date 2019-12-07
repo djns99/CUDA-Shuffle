@@ -42,40 +42,42 @@ __global__ void fisherYatesKernel( ElementType* container, uint64_t count, uint6
     RandomGenerator gen( seed + tid );
     uint64_t stride = 1ull << initial_stride_log;
     uint64_t offset = ( tid >> initial_stride_log ) * ( stride * 2 ) + ( tid & ( stride - 1 ) );
-    if( offset + stride >= count )
-    {
-        return;
-    }
     for( uint64_t i = 0; i < rounds_per_kernel; i++ )
     {
+        if( offset + stride >= count )
+        {
+            return;
+        }
+
         bool swap = gen() % 2 == 0;
         if( swap )
         {
             uint64_t swap_idx = offset + stride;
-            auto temp = container[offset];
+            const auto temp = container[offset];
             container[offset] = container[swap_idx];
             container[swap_idx] = temp;
         }
 
         // Next offset can be defined by recursive relation
-        // Tn = (offset & stride) != 0 ->  Tn-1 - stride
+        // Tn = (tid & stride) != 0 ->  Tn-1 - stride
         //      otherwise              ->  Tn-1
-		// Where stride = 2^n
-        offset -= offset & stride;
+        // Where stride = 2^n
+        offset -= tid & stride;
         stride *= 2;
         __syncthreads();
     }
 }
 
-#define checkCudaError( ans )								\
-    {														\
-        assertCudaError( ( ans ), __FILE__, __LINE__ );		\
+#define checkCudaError( ans )                           \
+    {                                                   \
+        assertCudaError( ( ans ), __FILE__, __LINE__ ); \
     }
 inline void assertCudaError( cudaError_t code, std::string file, int line )
 {
     if( code != cudaSuccess )
     {
-        throw std::runtime_error( "CUDA Error " + std::string( cudaGetErrorString( code ) ) + " " + file + ":" + std::to_string( line )  );
+        throw std::runtime_error( "CUDA Error " + std::string( cudaGetErrorString( code ) ) + " " +
+                                  file + ":" + std::to_string( line ) );
     }
 }
 
@@ -98,11 +100,13 @@ public:
         RandomGenerator random_function( seed );
         cudaStream_t stream;
         checkCudaError( cudaStreamCreate( &stream ) );
-        const uint64_t blocks_per_kernel = (num + elements_per_block - 1) / elements_per_block;
+        const uint64_t blocks_per_kernel = ( num + elements_per_block - 1 ) / elements_per_block;
         uint64_t stride = 1;
         for( auto kernel : kernels )
         {
-            kernel<<<blocks_per_kernel, threads_per_block, 0, stream>>>( thrust::raw_pointer_cast(out_container.data()), num, random_function() );
+            kernel<<<blocks_per_kernel, threads_per_block, 0, stream>>>( thrust::raw_pointer_cast(
+                                                                             out_container.data() ),
+                                                                         num, random_function() );
             checkCudaError( cudaGetLastError() );
             stride <<= elements_per_block_log;
             if( stride >= num )
