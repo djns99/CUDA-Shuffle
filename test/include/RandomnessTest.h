@@ -5,6 +5,7 @@
 #include "nist-utils/matrix.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
+#include "shuffle/StdShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
@@ -26,14 +27,15 @@ protected:
     ShuffleFunction shuffle;
     static DefaultRandomGenerator gen;
     typedef typename ShuffleFunction::Shuffle::container_type ContainerType;
-    static ContainerType shuffled_container;
-    static ContainerType source_container;
+    ContainerType shuffled_container;
+    ContainerType source_container;
     static constexpr uint64_t usable_bits = 24ull;
     // ~32 million elements in array
     static constexpr uint64_t max_num_elements = 1ull << usable_bits;
-    static constexpr double p_score_significance = 0.01;
+    // Fail if observed behaviour will happen < 0.1% of the time (1 in 1000)
+    static constexpr double p_score_significance = 0.001;
 
-    static void SetUpTestCase()
+    void SetUp()
     {
         source_container = ContainerType( max_num_elements, 0 );
         shuffled_container = ContainerType( max_num_elements, 0 );
@@ -83,10 +85,6 @@ protected:
 template <typename ShuffleFunction>
 DefaultRandomGenerator RandomnessTests<ShuffleFunction>::gen;
 template <typename ShuffleFunction>
-RandomnessTests<ShuffleFunction>::ContainerType RandomnessTests<ShuffleFunction>::shuffled_container;
-template <typename ShuffleFunction>
-RandomnessTests<ShuffleFunction>::ContainerType RandomnessTests<ShuffleFunction>::source_container;
-template <typename ShuffleFunction>
 constexpr uint64_t RandomnessTests<ShuffleFunction>::usable_bits;
 // ~32 million elements in array
 template <typename ShuffleFunction>
@@ -94,5 +92,5 @@ constexpr uint64_t RandomnessTests<ShuffleFunction>::max_num_elements;
 template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
-using ShuffleTypes = ::testing::Types<FisherYatesShuffle<>, SPNetworkBijectiveShuffle<>>;
+using ShuffleTypes = ::testing::Types<StdShuffle<>, SPNetworkBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

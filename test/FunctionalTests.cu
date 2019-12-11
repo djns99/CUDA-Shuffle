@@ -2,6 +2,8 @@
 #include "DefaultRandomGenerator.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
+#include "shuffle/StdShuffle.h"
+#include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
@@ -61,12 +63,13 @@ public:
 
 using ShuffleTypes =
     ::testing::Types<FisherYatesShuffle<>,
-					 FisherYatesShuffleGPU<>,
+                     GPUSwapShuffle<>,
+                     StdShuffle<>,
                      PrimeFieldBijectiveShuffle<>,
                      FeistelBijectiveShuffle<>,
                      SPNetworkBijectiveShuffle<>,
                      FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
-                     FisherYatesShuffleGPU<uint64_t, ConstantGenerator>,
+                     StdShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
