@@ -7,23 +7,16 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set( CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 
-add_executable(main main.cu)
-target_compile_options(main PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>)
+#add_executable(main main.cu)
+#target_compile_options(main PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>)
 enable_testing()
 
-configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
-)
-execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
-)
-
-include_directories("${gtest_SOURCE_DIR}/include")
-
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
-                 "${CMAKE_BINARY_DIR}/googletest-build"
-)
+set(OLD_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Suppressing benchmark's tests" FORCE)
+add_subdirectory(vendor/google/benchmark)
+add_subdirectory(vendor/google/googletest/googletest)
+set(CMAKE_BUILD_TYPE ${OLD_BUILD_TYPE})
 
 add_subdirectory(test)
+add_subdirectory(benchmarks)
