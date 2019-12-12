@@ -17,14 +17,20 @@ public:
 
     __host__ __device__ uint64_t operator()( const uint64_t val ) const
     {
+        assert( val < capacity );
         uint64_t state = val;
+        uint64_t rounds = 0;
         do
         {
+            const uint64_t last_state = state;
+            assert( rounds++ <= (1ull << num_bits) && "We did more rounds than our capacity. We must be in a loop");
             for( uint64_t i = 0; i < num_rounds; i++ )
             {
                 state = doRound( state, i );
                 assert( state < ( 1ull << num_bits ) );
             }
+
+            assert( state != last_state || state < capacity );
         } while( state >= capacity );
         return state;
     }
@@ -79,13 +85,21 @@ private:
 
     __host__ __device__ uint64_t permuteBits( uint64_t a ) const
     {
-        uint64_t half_bits = num_bits / 2;
-        uint64_t upper_half_bits = num_bits - half_bits;
+        uint64_t upper_half_bits = num_bits / 2;
+        uint64_t half_bits = num_bits - upper_half_bits;
         uint64_t half_mask = ( 1ull << half_bits ) - 1;
         uint64_t lower_half_split = interleaveWithZero( a & half_mask );
         uint64_t upper_half_split = interleaveWithZero( a >> half_bits );
 
-        return lower_half_split | ( reverseBits( upper_half_split ) >> ( 64 - upper_half_bits * 2 ) );
+        uint64_t reversed_upper_half = reverseBits( upper_half_split ) >> ( 64 - upper_half_bits * 2 );
+
+#ifdef __CUDA_ARCH__
+        assert( __popcll( reverseBits( upper_half_split ) ) == __popcll( a >> half_bits ) );
+#endif
+        assert( ( lower_half_split & reversed_upper_half ) == 0 );
+        assert( reversed_upper_half < ( 1ull << num_bits ) );
+        assert( lower_half_split < ( 1ull << num_bits ) );
+        return lower_half_split | reversed_upper_half;
     }
 
     __host__ __device__ uint64_t doRound( const uint64_t state, const uint64_t round ) const
@@ -95,18 +109,36 @@ private:
         uint64_t i;
         for( i = 0; i <= num_bits - 8; i += 8 )
         {
+            assert((output & (0xFF << i)) == 0);
             output |= sbox256( ( state >> i ) & 0xFF ) << i;
         }
         if( i <= num_bits - 4 )
         {
+            assert((output & (0xF << i)) == 0);
             output |= sbox16( ( state >> i ) & 0xF ) << i;
             i += 4;
         }
         if( i <= num_bits - 2 )
         {
+            assert((output & (0x3 << i)) == 0);
             output |= sbox4( ( state >> i ) & 0x3 ) << i;
+            i += 2;
         }
-        return permuteBits( output ) ^ key[round];
+        if( i == num_bits - 1) {
+            assert((output & (0x1 << i)) == 0);
+            // Copy top bit
+            output |= state & (1 << i);
+        }
+#ifdef __CUDA_ARCH__
+        assert( __popcll( output ) == __popcll( permuteBits( output ) ) );
+#endif
+        assert( permuteBits( output ) < (1ull << num_bits) );
+        assert( permuteBits( output ) == permuteBits( output ) );
+        assert( key[round] < (1ull << num_bits) );
+
+        const uint64_t result = permuteBits( output ) ^ key[round];
+
+        return result;
     }
 
     uint64_t num_bits;

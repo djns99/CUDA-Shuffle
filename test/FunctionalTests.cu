@@ -22,7 +22,7 @@ public:
     using RandomGenerator = typename ShuffleFunction::Shuffle::random_generator;
     ContainerType shuffled_container;
     ContainerType reference_container;
-    uint64_t num_elements = 100;
+    uint64_t num_elements = 257;
 
     void SetUp()
     {
