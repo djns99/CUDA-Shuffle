@@ -109,25 +109,25 @@ private:
         uint64_t i;
         for( i = 0; i <= num_bits - 8; i += 8 )
         {
-            assert((output & (0xFF << i)) == 0);
-            output |= sbox256( ( state >> i ) & 0xFF ) << i;
+            assert((output & (0xFFull << i)) == 0);
+            output |= (uint64_t)sbox256( ( state >> i ) & 0xFF ) << i;
         }
         if( i <= num_bits - 4 )
         {
-            assert((output & (0xF << i)) == 0);
-            output |= sbox16( ( state >> i ) & 0xF ) << i;
+            assert((output & (0xFull << i)) == 0);
+            output |= (uint64_t)sbox16( ( state >> i ) & 0xF ) << i;
             i += 4;
         }
         if( i <= num_bits - 2 )
         {
-            assert((output & (0x3 << i)) == 0);
-            output |= sbox4( ( state >> i ) & 0x3 ) << i;
+            assert((output & (0x3ull << i)) == 0);
+            output |= (uint64_t)sbox4( ( state >> i ) & 0x3 ) << i;
             i += 2;
         }
         if( i == num_bits - 1) {
-            assert((output & (0x1 << i)) == 0);
+            assert((output & (0x1ull << i)) == 0);
             // Copy top bit
-            output |= state & (1 << i);
+            output |= state & (1ull << i);
         }
 #ifdef __CUDA_ARCH__
         assert( __popcll( output ) == __popcll( permuteBits( output ) ) );

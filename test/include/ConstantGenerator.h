@@ -4,29 +4,32 @@
 class ConstantGenerator
 {
 public:
-    using result_type = uint64_t;
+    typedef uint64_t result_type;
 
-    ConstantGenerator() : constant( 0 )
+    ConstantGenerator() 
+        : constant( 0 )
     {
     }
 
-    ConstantGenerator( uint64_t constant ) : constant( constant )
+    ConstantGenerator( uint64_t constant ) 
+        : constant( constant )
     {
     }
 
-    __host__ __device__ uint64_t operator()()
+    uint64_t operator()()
     {
         return constant;
     }
 
-    __host__ __device__ uint64_t max() {
+    constexpr static uint64_t max() {
         return UINT64_MAX;
     }
 
-    __host__ __device__ uint64_t min() {
+    constexpr static uint64_t min()
+    {
         return 0;
     }
 
 private:
-    uint64_t constant;
+    const uint64_t constant;
 };

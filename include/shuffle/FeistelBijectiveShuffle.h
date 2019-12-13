@@ -13,7 +13,7 @@ public:
         this->capacity = capacity;
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
-            key[i] = random_function();
+            key[i] = (uint32_t)random_function();
         }
     }
 
@@ -121,7 +121,7 @@ private:
     uint64_t side_bits;
     uint64_t side_mask;
     uint64_t capacity;
-    uint64_t key[num_rounds];
+    uint32_t key[num_rounds];
 
 
     __host__ __device__ uint8_t sbox16( uint8_t index ) const
