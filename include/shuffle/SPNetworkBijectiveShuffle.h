@@ -188,4 +188,4 @@ private:
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using SPNetworkBijectiveShuffle =
-    BijectiveFunctionShuffle<SPNetworkBijectiveFunction<12>, ContainerType, RandomGenerator>;
+    BijectiveFunctionShuffle<SPNetworkBijectiveFunction<8>, ContainerType, RandomGenerator>;

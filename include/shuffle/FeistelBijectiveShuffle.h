@@ -160,4 +160,4 @@ private:
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using FeistelBijectiveShuffle =
-    BijectiveFunctionShuffle<FeistelBijectiveFunction<12>, ContainerType, RandomGenerator>;
+    BijectiveFunctionShuffle<FeistelBijectiveFunction<8>, ContainerType, RandomGenerator>;

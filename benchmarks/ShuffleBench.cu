@@ -1,5 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <vector>
+#include <cmath>
+#include <sstream>
 #include <thrust/device_vector.h>
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
@@ -17,7 +19,7 @@ static void benchmarkFunction(benchmark::State& state) {
     using ContainerType = typename ShuffleFunction::container_type;
 
     // Shuffle second param adds 0 or 1 to compare power of two (best case) vs. one above power of two (worst case)
-    uint64_t num_to_shuffle = (uint64_t)state.range(0) + state.range(1);
+    uint64_t num_to_shuffle = (uint64_t)state.range(1) + state.range(0);
 
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
@@ -28,6 +30,14 @@ static void benchmarkFunction(benchmark::State& state) {
     }
 
     state.SetItemsProcessed( state.iterations() * num_to_shuffle );
+    uint64_t log = std::log2(num_to_shuffle);
+    std::stringstream s;
+    s << "Shuffle 2^" << log;
+    if(state.range(1))
+    {
+        s << " + 1";
+    }
+    state.SetLabel(s.str());
 }
 
 static void argsGenerator(benchmark::internal::Benchmark* b) {
