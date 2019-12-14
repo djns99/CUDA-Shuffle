@@ -10,6 +10,7 @@
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
+#include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/StdShuffle.h"
 
 
@@ -40,9 +41,12 @@ static void benchmarkFunction(benchmark::State& state) {
     state.SetLabel(s.str());
 }
 
-static void argsGenerator(benchmark::internal::Benchmark* b) {
+static void argsGenerator(benchmark::internal::Benchmark* b)
+{
     b->Ranges({{1<<8, 1<<30}, {0, 1}});
 }
+
+BENCHMARK_TEMPLATE(benchmarkFunction, LubyRackoffBijectiveShuffle<thrust::device_vector<uint8_t>>)->Apply(argsGenerator);
 
 BENCHMARK_TEMPLATE(benchmarkFunction, StdShuffle<std::vector<uint8_t>>)->Apply(argsGenerator);
 BENCHMARK_TEMPLATE(benchmarkFunction, FisherYatesShuffle<std::vector<uint8_t>>)->Apply(argsGenerator);

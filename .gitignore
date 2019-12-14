@@ -2,5 +2,5 @@ cmake-build-*
 .idea
 /.vs
 /out/build/x64-Debug
-build/
+build*
 .vscode

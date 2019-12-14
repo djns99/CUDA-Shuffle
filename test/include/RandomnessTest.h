@@ -9,6 +9,7 @@
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
+#include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "gtest/gtest.h"
 #include <cmath>
@@ -92,5 +93,5 @@ constexpr uint64_t RandomnessTests<ShuffleFunction>::max_num_elements;
 template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
-using ShuffleTypes = ::testing::Types<StdShuffle<>, SPNetworkBijectiveShuffle<>>;
+using ShuffleTypes = ::testing::Types<StdShuffle<>, SPNetworkBijectiveShuffle<>, LubyRackoffBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

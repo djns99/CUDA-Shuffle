@@ -7,6 +7,7 @@
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
 #include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
+#include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "gtest/gtest.h"
 #include <cstdint>
@@ -68,11 +69,13 @@ using ShuffleTypes =
                      PrimeFieldBijectiveShuffle<>,
                      FeistelBijectiveShuffle<>,
                      SPNetworkBijectiveShuffle<>,
+                     LubyRackoffBijectiveShuffle<>,
                      FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      StdShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
+                     SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     LubyRackoffBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
 
 TYPED_TEST( FunctionalTests, SameLength )
