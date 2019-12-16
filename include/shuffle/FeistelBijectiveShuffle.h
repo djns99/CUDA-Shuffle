@@ -1,5 +1,7 @@
 #pragma once
 #include "shuffle/BijectiveFunctionShuffle.h"
+#include "shuffle/BijectiveFunctionSortShuffle.h"
+#include "shuffle/BijectiveFunctionCompressor.h"
 
 template <uint64_t num_rounds>
 class FeistelBijectiveFunction
@@ -10,7 +12,6 @@ public:
     {
         side_bits = getCipherBits( capacity );
         side_mask = ( 1ull << side_bits ) - 1;
-        this->capacity = capacity;
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
             key[i] = (uint32_t)random_function();
@@ -21,13 +22,10 @@ public:
     {
         RoundState state = { ( uint32_t )( val >> side_bits ), ( uint32_t )( val & side_mask ) };
 
-        do
+        for( uint64_t i = 0; i < num_rounds; i++ )
         {
-            for( uint64_t i = 0; i < num_rounds; i++ )
-            {
-                state = doRound( state, i );
-            }
-        } while( state.getValue( side_bits ) >= capacity );
+            state = doRound( state, i );
+        }
 
         return state.getValue( side_bits );
     }
@@ -120,7 +118,6 @@ private:
 
     uint64_t side_bits;
     uint64_t side_mask;
-    uint64_t capacity;
     uint32_t key[num_rounds];
 
 
@@ -160,4 +157,8 @@ private:
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using FeistelBijectiveShuffle =
-    BijectiveFunctionShuffle<FeistelBijectiveFunction<8>, ContainerType, RandomGenerator>;
+    BijectiveFunctionShuffle<BijectiveFunctionCompressor<FeistelBijectiveFunction<8>>, ContainerType, RandomGenerator>;
+
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+using FeistelBijectiveSortShuffle =
+    BijectiveFunctionSortShuffle<FeistelBijectiveFunction<8>, ContainerType, RandomGenerator>;

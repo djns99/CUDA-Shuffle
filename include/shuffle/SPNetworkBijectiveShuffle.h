@@ -1,5 +1,7 @@
 #pragma once
 #include "shuffle/BijectiveFunctionShuffle.h"
+#include "shuffle/BijectiveFunctionSortShuffle.h"
+#include "shuffle/BijectiveFunctionCompressor.h"
 
 template <uint64_t num_rounds>
 class SPNetworkBijectiveFunction
@@ -8,7 +10,6 @@ public:
     template <class RandomGenerator>
     void init( uint64_t capacity, RandomGenerator& random_function )
     {
-        this->capacity = capacity;
         num_bits = getCipherBits( capacity );
         bit_mask = ( 1ull << num_bits ) - 1;
         for( uint64_t i = 0; i < num_rounds; i++ )
@@ -17,21 +18,11 @@ public:
 
     __host__ __device__ uint64_t operator()( const uint64_t val ) const
     {
-        assert( val < capacity );
         uint64_t state = val;
-        uint64_t rounds = 0;
-        do
+        for( uint64_t i = 0; i < num_rounds; i++ )
         {
-            const uint64_t last_state = state;
-            assert( rounds++ <= (1ull << num_bits) && "We did more rounds than our capacity. We must be in a loop");
-            for( uint64_t i = 0; i < num_rounds; i++ )
-            {
-                state = doRound( state, i );
-                assert( state < ( 1ull << num_bits ) );
-            }
-
-            assert( state != last_state || state < capacity );
-        } while( state >= capacity );
+            state = doRound( state, i );
+        }
         return state;
     }
 
@@ -143,7 +134,6 @@ private:
 
     uint64_t num_bits;
     uint64_t bit_mask;
-    uint64_t capacity;
     uint64_t key[num_rounds];
 
 
@@ -188,4 +178,8 @@ private:
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using SPNetworkBijectiveShuffle =
-    BijectiveFunctionShuffle<SPNetworkBijectiveFunction<8>, ContainerType, RandomGenerator>;
+    BijectiveFunctionShuffle<BijectiveFunctionCompressor<SPNetworkBijectiveFunction<8>>, ContainerType, RandomGenerator>;
+
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+using SPNetworkBijectiveSortShuffle =
+    BijectiveFunctionSortShuffle<SPNetworkBijectiveFunction<8>, ContainerType, RandomGenerator>;

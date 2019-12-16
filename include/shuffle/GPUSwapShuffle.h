@@ -1,6 +1,7 @@
 #pragma once
 #include <thrust/device_vector.h>
 #include "DefaultRandomGenerator.h"
+#include "CudaHelpers.h"
 #include "shuffle/Shuffle.h"
 
 __global__ void generatorInitKernel( GPURandomGenerator* gen, uint64_t count, uint64_t seed ) {
@@ -43,20 +44,6 @@ __global__ void gpuSwapKernel( ElementType* container, uint64_t count, GPURandom
         __syncthreads();
     }
 }
-
-#define checkCudaError( ans )                           \
-    {                                                   \
-        assertCudaError( ( ans ), __FILE__, __LINE__ ); \
-    }
-inline void assertCudaError( cudaError_t code, std::string file, int line )
-{
-    if( code != cudaSuccess )
-    {
-        throw std::runtime_error( "CUDA Error " + std::string( cudaGetErrorString( code ) ) + " " +
-                                  file + ":" + std::to_string( line ) );
-    }
-}
-
 
 template <class ElementType = uint64_t>
 class GPUSwapShuffle : public Shuffle<thrust::device_vector<ElementType>, GPURandomGenerator>

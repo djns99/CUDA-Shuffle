@@ -1,5 +1,7 @@
 #pragma once
 #include "shuffle/BijectiveFunctionShuffle.h"
+#include "shuffle/BijectiveFunctionSortShuffle.h"
+#include "shuffle/BijectiveFunctionCompressor.h"
 #include <cuda_runtime.h>
 
 class LubyRackoffBijectiveFunction
@@ -27,7 +29,6 @@ public:
     {
         side_bits = getCipherBits( capacity );
         side_mask = ( 1ull << side_bits ) - 1;
-        this->capacity = capacity;
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
             key[i] = { { random_function(), random_function(), random_function(), random_function() },
@@ -41,12 +42,7 @@ public:
     __device__ uint64_t operator()( const uint64_t val ) const
     {
         RoundState state = { ( uint32_t )( val >> side_bits ), ( uint32_t )( val & side_mask ) };
-
-        do
-        {
-            state = lubyRackoff( state );
-        } while( state.getValue( side_bits ) >= capacity );
-
+        state = lubyRackoff( state );
         return state.getValue( side_bits );
     }
 
@@ -124,10 +120,13 @@ private:
 
     uint64_t side_bits;
     uint64_t side_mask;
-    uint64_t capacity;
     Key key[num_rounds];
 };
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using LubyRackoffBijectiveShuffle =
-    BijectiveFunctionShuffle<LubyRackoffBijectiveFunction, ContainerType, RandomGenerator>;
+    BijectiveFunctionShuffle<BijectiveFunctionCompressor<LubyRackoffBijectiveFunction>, ContainerType, RandomGenerator>;
+
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+using LubyRackoffBijectiveSortShuffle =
+    BijectiveFunctionSortShuffle<LubyRackoffBijectiveFunction, ContainerType, RandomGenerator>;

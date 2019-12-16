@@ -8,8 +8,8 @@
 
 #include "shuffle/Shuffle.h"
 
-template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-class PrimeFieldSortShuffle : public Shuffle<ContainerType, RandomGenerator>
+template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+class BijectiveFunctionSortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
     static uint64_t roundUpPower2( uint64_t a )
@@ -37,12 +37,8 @@ public:
         }
 
         RandomGenerator random_function( seed );
-        // Round up to power of two
-        uint64_t cap = roundUpPower2( num );
-        // Choose an odd number so we know it is coprime with cap
-        uint64_t mul = ( random_function() * 2 + 1 ) % cap;
-        // Choose a shift
-        uint64_t shift = random_function() % cap;
+        BijectiveFunction mapping_function;
+        mapping_function.init(num, random_function);
 
         thrust::device_vector<uint64_t> keys( num );
 
@@ -50,8 +46,8 @@ public:
         thrust::sequence( thrust::device, keys.begin(), keys.end() );
         // Inplace transform
         thrust::transform( thrust::device, keys.begin(), keys.end(), keys.begin(),
-                           [=] __host__ __device__( uint64_t val ) -> uint64_t {
-                               return ( val * mul + shift ) % cap;
+                           [mapping_function] __host__ __device__( uint64_t val ) -> uint64_t {
+                               return mapping_function(val);
                            } );
         // Sort by keys
         thrust::sort_by_key( thrust::device, keys.begin(), keys.end(), out_container.begin() );

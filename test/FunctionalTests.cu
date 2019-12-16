@@ -5,7 +5,6 @@
 #include "shuffle/StdShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/PrimeFieldBijectiveShuffle.h"
-#include "shuffle/PrimeFieldSortShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
@@ -67,15 +66,23 @@ using ShuffleTypes =
                      GPUSwapShuffle<>,
                      StdShuffle<>,
                      PrimeFieldBijectiveShuffle<>,
+                     PrimeFieldBijectiveSortShuffle<>,
                      FeistelBijectiveShuffle<>,
+                     FeistelBijectiveSortShuffle<>,
                      SPNetworkBijectiveShuffle<>,
+                     SPNetworkBijectiveSortShuffle<>,
                      LubyRackoffBijectiveShuffle<>,
+                     LubyRackoffBijectiveSortShuffle<>,
                      FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      StdShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      PrimeFieldBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     PrimeFieldBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      FeistelBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     FeistelBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     LubyRackoffBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
+                     SPNetworkBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     LubyRackoffBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     LubyRackoffBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
 
 TYPED_TEST( FunctionalTests, SameLength )

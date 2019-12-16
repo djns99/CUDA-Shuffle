@@ -32,6 +32,7 @@ public:
         thrust::copy( thrust::make_permutation_iterator( in_container.begin(), transform_it_begin ),
                       thrust::make_permutation_iterator( in_container.begin(), transform_it_end ),
                       out_container.begin() );
+                      
     }
 
     bool supportsInPlace() override
