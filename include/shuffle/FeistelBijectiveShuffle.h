@@ -15,7 +15,9 @@ public:
         side_mask = ( 1ull << side_bits ) - 1;
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
-            key[i] = (uint32_t)random_function();
+            key[i][0] = random_function();
+            key[i][1] = random_function();
+            key[i][2] = random_function();
         }
     }
 
@@ -23,7 +25,7 @@ public:
     {
         return 1ull << ( side_bits * 2 );
     }
-    __host__ __device__ uint64_t operator()( const uint64_t val ) const
+    __device__ uint64_t operator()( const uint64_t val ) const
     {
         RoundState state = { ( uint32_t )( val >> side_bits ), ( uint32_t )( val & side_mask ) };
 
@@ -54,24 +56,24 @@ private:
     {
         uint32_t left, right;
 
-        __host__ __device__ uint64_t getValue( uint64_t side_bits ) const
+        __device__ uint64_t getValue( uint64_t side_bits ) const
         {
             return ( ( (uint64_t)left ) << side_bits ) | right;
         }
     };
 
-    __host__ __device__ uint32_t applyKey( const uint32_t in_value, const uint32_t key ) const
-    {
-        uint32_t value = in_value ^ key;
-        uint32_t new_val = 0;
-        for( uint64_t i = 0; i <= side_bits - 4; i += 4 )
-        {
-            new_val = ( new_val << 4 ) | sbox16( ( value >> i ) & 0xF );
-        }
-        return new_val & side_mask;
-    }
+    // __device__ uint32_t applyKey( const uint32_t in_value, const uint32_t key ) const
+    // {
+    //     uint32_t value = in_value ^ key;
+    //     uint32_t new_val = 0;
+    //     for( uint64_t i = 0; i <= side_bits - 4; i += 4 )
+    //     {
+    //         new_val = ( new_val << 4 ) | sbox16( ( value >> i ) & 0xF );
+    //     }
+    //     return new_val & side_mask;
+    // }
 
-    // __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
+    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
     // {
     //     value ^= key;
     //     for( uint64_t i = 0; i < 5; i++ )
@@ -88,33 +90,46 @@ private:
     //     return value & side_mask;
     // }
 
-    //  __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
-    //  {
-    //      value ^= value >> 12;
-    //      value ^= value << 25;
-    //      value ^= value >> 27;
-    //// Initialise u,v,w for random number generator
-    //      uint64_t u = value ^ key[0];
-    //      value ^= value >> 12;
-    //      value ^= value << 25;
-    //      value ^= value >> 27;
-    //      uint64_t v = value ^ key[1];
-    //      value ^= value >> 12;
-    //      value ^= value << 25;
-    //      value ^= value >> 27;
-    //      uint64_t w = value ^ key[2];
-    //      u = u * 2862933555777941757LL + 7046029254386353087LL;
-    //      v ^= v >> 17;
-    //      v ^= v << 31;
-    //      v ^= v >> 8;
-    //      w = 4294957665U * ( w & 0xffffffff ) + ( w >> 32 );
-    //      uint64_t x = u ^ ( u << 21 );
-    //      x ^= x >> 35;
-    //      x ^= x << 4;
-    //      return (( x + v ) ^ w) & side_mask;
-    //  }
+    /*
+     * wyhash64 hash function
+     */
+    __device__ uint64_t wyhash64( uint64_t wyhash64 ) const
+    {
+        wyhash64 += 0x60bee2bee120fc15;
+        uint64_t x = wyhash64;
+        constexpr uint64_t y = 0xa3b195354a39b70d;
+        constexpr uint64_t z = 0x1b03738712fad5c9;
+        uint64_t w = __mul64hi( x, y ) ^ ( x * y );
+        return __mul64hi( z, w ) ^ ( z * w );
+    }
 
-    __host__ __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
+    __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
+    {
+        // Hash so value affects more than just the lower bits of the key
+        value = wyhash64( value );
+        // Initialise u,v,w for random number generator
+        uint64_t u = value ^ key[0];
+        value ^= value >> 12;
+        value ^= value << 25;
+        value ^= value >> 27;
+        uint64_t v = value ^ key[1];
+        value ^= value >> 12;
+        value ^= value << 25;
+        value ^= value >> 27;
+        uint64_t w = value ^ key[2];
+        // Numerical Recipes recommended random number generator
+        u = u * 2862933555777941757LL + 7046029254386353087LL;
+        v ^= v >> 17;
+        v ^= v << 31;
+        v ^= v >> 8;
+        w = 4294957665U * ( w & 0xffffffff ) + ( w >> 32 );
+        uint64_t x = u ^ ( u << 21 );
+        x ^= x >> 35;
+        x ^= x << 4;
+        return ( ( x + v ) ^ w ) & side_mask;
+    }
+
+    __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
         uint32_t new_left = state.right;
         uint32_t new_right = state.left ^ applyKey( state.right, key[round] );
@@ -123,10 +138,9 @@ private:
 
     uint64_t side_bits;
     uint64_t side_mask;
-    uint32_t key[num_rounds];
+    uint64_t key[num_rounds][3];
 
-
-    __host__ __device__ uint8_t sbox16( uint8_t index ) const
+    __device__ uint8_t sbox16( uint8_t index ) const
     {
         // Random 4-bit s-box
         static const uint8_t sbox16[16] = { 0xC, 0x5, 0x0, 0xE, 0x9, 0x3, 0xA, 0xD,

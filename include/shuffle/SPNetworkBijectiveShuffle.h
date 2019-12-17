@@ -127,6 +127,7 @@ private:
             // Copy top bit
             output |= state & ( 1ull << i );
         }
+
 #ifdef __CUDA_ARCH__
         assert( __popcll( output ) == __popcll( permuteBits( output ) ) );
 #endif
@@ -185,7 +186,7 @@ private:
     }
 };
 
-static constexpr uint64_t SP_DEFAULT_NUM_ROUNDS = 8;
+static constexpr uint64_t SP_DEFAULT_NUM_ROUNDS = 12;
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using SPNetworkBijectiveShuffle =
     BijectiveFunctionShuffle<BijectiveFunctionCompressor<SPNetworkBijectiveFunction<SP_DEFAULT_NUM_ROUNDS>>, ContainerType, RandomGenerator>;
