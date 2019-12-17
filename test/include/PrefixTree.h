@@ -1,10 +1,10 @@
 #pragma once
 #include <assert.h>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
-#include <functional>
 
 class PrefixTreeNode
 {

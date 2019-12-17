@@ -38,7 +38,7 @@ public:
 
         RandomGenerator random_function( seed );
         BijectiveFunction mapping_function;
-        mapping_function.init(num, random_function);
+        mapping_function.init( num, random_function );
 
         thrust::device_vector<uint64_t> keys( num );
 
@@ -47,7 +47,7 @@ public:
         // Inplace transform
         thrust::transform( thrust::device, keys.begin(), keys.end(), keys.begin(),
                            [mapping_function] __host__ __device__( uint64_t val ) -> uint64_t {
-                               return mapping_function(val);
+                               return mapping_function( val );
                            } );
         // Sort by keys
         thrust::sort_by_key( thrust::device, keys.begin(), keys.end(), out_container.begin() );

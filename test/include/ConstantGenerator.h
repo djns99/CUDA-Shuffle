@@ -6,13 +6,11 @@ class ConstantGenerator
 public:
     typedef uint64_t result_type;
 
-    ConstantGenerator() 
-        : constant( 0 )
+    ConstantGenerator() : constant( 0 )
     {
     }
 
-    ConstantGenerator( uint64_t constant ) 
-        : constant( constant )
+    ConstantGenerator( uint64_t constant ) : constant( constant )
     {
     }
 
@@ -21,7 +19,8 @@ public:
         return constant;
     }
 
-    constexpr static uint64_t max() {
+    constexpr static uint64_t max()
+    {
         return UINT64_MAX;
     }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-template<class BijectiveFunction>
+template <class BijectiveFunction>
 class BijectiveFunctionCompressor : BijectiveFunction
 {
 public:
@@ -13,7 +13,8 @@ public:
 
     __host__ __device__ uint64_t operator()( uint64_t val ) const
     {
-        do {
+        do
+        {
             const uint64_t last_val = val;
             (void)last_val;
             val = BijectiveFunction::operator()( val );

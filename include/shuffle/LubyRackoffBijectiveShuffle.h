@@ -1,7 +1,8 @@
 #pragma once
+#include "shuffle/BijectiveFunctionCompressor.h"
+#include "shuffle/BijectiveFunctionScanShuffle.h"
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
-#include "shuffle/BijectiveFunctionCompressor.h"
 #include <cuda_runtime.h>
 
 class LubyRackoffBijectiveFunction
@@ -37,6 +38,11 @@ public:
                          { random_function(), random_function() },
                          { random_function(), random_function() } } };
         }
+    }
+
+    uint64_t getMappingRange() const
+    {
+        return 1ull << side_bits;
     }
 
     __device__ uint64_t operator()( const uint64_t val ) const
@@ -130,3 +136,7 @@ using LubyRackoffBijectiveShuffle =
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using LubyRackoffBijectiveSortShuffle =
     BijectiveFunctionSortShuffle<LubyRackoffBijectiveFunction, ContainerType, RandomGenerator>;
+
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+using LubyRackoffBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<LubyRackoffBijectiveFunction, ContainerType, RandomGenerator>;

@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
+#include <vector>
 
 template <class ContainerType = std::vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class FisherYatesShuffle : public Shuffle<ContainerType, RandomGenerator>

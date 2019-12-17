@@ -1,8 +1,8 @@
 #pragma once
-#include <vector>
-#include <algorithm>
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
+#include <algorithm>
+#include <vector>
 
 template <class ContainerType = std::vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class StdShuffle : public Shuffle<ContainerType, RandomGenerator>
@@ -16,7 +16,7 @@ public:
             std::copy( in_container.begin(), in_container.begin() + num, out_container.begin() );
         }
 
-        RandomGenerator g(seed);
+        RandomGenerator g( seed );
         std::shuffle( out_container.begin(), out_container.begin() + num, g );
     }
 };

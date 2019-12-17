@@ -1,10 +1,11 @@
 #pragma once
-#include <thrust/device_vector.h>
-#include "DefaultRandomGenerator.h"
 #include "CudaHelpers.h"
+#include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
+#include <thrust/device_vector.h>
 
-__global__ void generatorInitKernel( GPURandomGenerator* gen, uint64_t count, uint64_t seed ) {
+__global__ void generatorInitKernel( GPURandomGenerator* gen, uint64_t count, uint64_t seed )
+{
     uint64_t tid = threadIdx.x + blockIdx.x * blockDim.x;
     if( tid >= count )
         return;
@@ -54,8 +55,7 @@ private:
     constexpr static uint64_t threads_per_block = 1ull << threads_per_block_log;
     constexpr static uint64_t elements_per_block = 1ull << elements_per_block_log;
 
-    constexpr static decltype(
-        &gpuSwapKernel<ElementType, elements_per_block_log, 0> ) kernels[6] = {
+    constexpr static decltype( &gpuSwapKernel<ElementType, elements_per_block_log, 0> ) kernels[6] = {
         &gpuSwapKernel<ElementType, elements_per_block_log, elements_per_block_log * 0>,
         &gpuSwapKernel<ElementType, elements_per_block_log, elements_per_block_log * 1>,
         &gpuSwapKernel<ElementType, elements_per_block_log, elements_per_block_log * 2>,
@@ -63,6 +63,7 @@ private:
         &gpuSwapKernel<ElementType, elements_per_block_log, elements_per_block_log * 4>,
         &gpuSwapKernel<ElementType, elements_per_block_log, elements_per_block_log * 5>,
     };
+
 public:
     void shuffle( const thrust::device_vector<ElementType>& in_container,
                   thrust::device_vector<ElementType>& out_container,
@@ -74,10 +75,9 @@ public:
         const uint64_t blocks_per_kernel = ( num + elements_per_block - 1 ) / elements_per_block;
 
         GPURandomGenerator* d_generators;
-        checkCudaError( cudaMalloc( &d_generators, num * sizeof(GPURandomGenerator) ) );
-        std::unique_ptr<GPURandomGenerator[], std::function<void(GPURandomGenerator*)>> generators(d_generators, [](GPURandomGenerator* ptr) {
-            checkCudaError( cudaFree( ptr ) );
-        });
+        checkCudaError( cudaMalloc( &d_generators, num * sizeof( GPURandomGenerator ) ) );
+        std::unique_ptr<GPURandomGenerator[], std::function<void( GPURandomGenerator* )>> generators(
+            d_generators, []( GPURandomGenerator* ptr ) { checkCudaError( cudaFree( ptr ) ); } );
         generatorInitKernel<<<blocks_per_kernel, threads_per_block, 0, stream>>>( generators.get(), num, seed );
 
         if( &in_container != &out_container )
@@ -101,6 +101,6 @@ public:
     }
 };
 
-template<class ElementType>
-constexpr decltype(
-        &gpuSwapKernel<ElementType, GPUSwapShuffle<ElementType>::elements_per_block_log, 0> ) GPUSwapShuffle<ElementType>::kernels[];
+template <class ElementType>
+constexpr decltype( &gpuSwapKernel<ElementType, GPUSwapShuffle<ElementType>::elements_per_block_log, 0> )
+    GPUSwapShuffle<ElementType>::kernels[];

@@ -1,7 +1,8 @@
 #pragma once
+#include "shuffle/BijectiveFunctionCompressor.h"
+#include "shuffle/BijectiveFunctionScanShuffle.h"
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
-#include "shuffle/BijectiveFunctionCompressor.h"
 
 class PrimeFieldBijectiveFunction
 {
@@ -18,6 +19,11 @@ public:
         multiplier = ( random_function() * 2 + 1 ) % modulus;
         pre_addition = random_function() % modulus;
         post_addition = random_function() % modulus;
+    }
+
+    uint64_t getMappingRange() const
+    {
+        return modulus;
     }
 
     __host__ __device__ uint64_t operator()( uint64_t val ) const
@@ -55,3 +61,7 @@ using PrimeFieldBijectiveShuffle =
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using PrimeFieldBijectiveSortShuffle =
     BijectiveFunctionSortShuffle<PrimeFieldBijectiveFunction, ContainerType, RandomGenerator>;
+
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+using PrimeFieldBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<PrimeFieldBijectiveFunction, ContainerType, RandomGenerator>;
