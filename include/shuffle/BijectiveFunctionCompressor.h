@@ -1,4 +1,5 @@
 #pragma once
+#include <assert.h>
 
 template <class BijectiveFunction>
 class BijectiveFunctionCompressor : BijectiveFunction
