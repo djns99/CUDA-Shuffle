@@ -21,7 +21,7 @@ public:
 
     uint64_t getMappingRange() const
     {
-        return 1ull << side_bits;
+        return 1ull << ( side_bits * 2 );
     }
     __host__ __device__ uint64_t operator()( const uint64_t val ) const
     {
