@@ -30,9 +30,13 @@ public:
             } );
         auto transform_it_end = transform_it_begin + num;
 
-        thrust::copy( thrust::make_permutation_iterator( in_container.begin(), transform_it_begin ),
-                      thrust::make_permutation_iterator( in_container.begin(), transform_it_end ),
-                      out_container.begin() );
+        // Output iterator as permutation iterator is ~2 faster. Likely due to sequential loads being more performant than sequential writes
+        // thrust::copy( thrust::make_permutation_iterator( in_container.begin(), transform_it_begin ),
+        //               thrust::make_permutation_iterator( in_container.begin(), transform_it_end ),
+        //               out_container.begin() );
+        thrust::copy( in_container.begin(),
+                      in_container.end(),
+                      thrust::make_permutation_iterator( out_container.begin(), transform_it_begin ) );
     }
 
     bool supportsInPlace() override
