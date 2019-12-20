@@ -34,8 +34,7 @@ public:
         // thrust::copy( thrust::make_permutation_iterator( in_container.begin(), transform_it_begin ),
         //               thrust::make_permutation_iterator( in_container.begin(), transform_it_end ),
         //               out_container.begin() );
-        thrust::copy( in_container.begin(),
-                      in_container.end(),
+        thrust::copy( in_container.begin(), in_container.end(),
                       thrust::make_permutation_iterator( out_container.begin(), transform_it_begin ) );
     }
 
