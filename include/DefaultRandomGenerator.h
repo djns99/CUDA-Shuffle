@@ -58,10 +58,8 @@ public:
 
     __device__ bool getBool()
     {
-#ifdef __CUDA_ARCH__
         // Count the bits in the generated value to get a bool
         return __popcll( curand( &state ) ) & 1;
-#endif
     }
 
 private:

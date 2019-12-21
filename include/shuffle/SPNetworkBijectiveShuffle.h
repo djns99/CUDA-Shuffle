@@ -22,7 +22,7 @@ public:
         return 1ull << num_bits;
     }
 
-    __host__ __device__ uint64_t operator()( const uint64_t val ) const
+    __device__ uint64_t operator()( const uint64_t val ) const
     {
         uint64_t state = val;
         for( uint64_t i = 0; i < num_rounds; i++ )
@@ -49,7 +49,7 @@ private:
         return i;
     }
 
-    __host__ __device__ uint64_t interleaveWithZero( uint64_t x ) const
+    __device__ uint64_t interleaveWithZero( uint64_t x ) const
     {
         x = ( x | ( x << 16 ) ) & 0x0000FFFF0000FFFF;
         x = ( x | ( x << 8 ) ) & 0x00FF00FF00FF00FF;
@@ -60,27 +60,18 @@ private:
     }
 
     template <uint64_t m, int k>
-    __host__ __device__ static inline uint64_t swapbits( uint64_t p )
+    __device__ static inline uint64_t swapbits( uint64_t p )
     {
         uint64_t q = ( ( p >> k ) ^ p ) & m;
         return p ^ q ^ ( q << k );
     }
 
-    __host__ __device__ uint64_t reverseBits( uint64_t n ) const
+    __device__ uint64_t reverseBits( uint64_t n ) const
     {
-        static const uint64_t m0 = 0x5555555555555555LLU;
-        static const uint64_t m1 = 0x0300c0303030c303LLU;
-        static const uint64_t m2 = 0x00c0300c03f0003fLLU;
-        static const uint64_t m3 = 0x00000ffc00003fffLLU;
-        n = ( ( n >> 1 ) & m0 ) | ( n & m0 ) << 1;
-        n = swapbits<m1, 4>( n );
-        n = swapbits<m2, 8>( n );
-        n = swapbits<m3, 20>( n );
-        n = ( n >> 34 ) | ( n << 30 );
-        return n;
+        return __brevll( n );
     }
 
-    __host__ __device__ uint64_t permuteBits( uint64_t a ) const
+    __device__ uint64_t permuteBits( uint64_t a ) const
     {
         uint64_t upper_half_bits = num_bits / 2;
         uint64_t half_bits = num_bits - upper_half_bits;
@@ -99,7 +90,7 @@ private:
         return lower_half_split | reversed_upper_half;
     }
 
-    __host__ __device__ uint64_t doRound( const uint64_t state, const uint64_t round ) const
+    __device__ uint64_t doRound( const uint64_t state, const uint64_t round ) const
     {
         uint64_t output = 0;
         // Do sboxes
@@ -145,13 +136,13 @@ private:
     uint64_t key[num_rounds];
 
 
-    __host__ __device__ uint8_t sbox4( uint8_t index ) const
+    __device__ uint8_t sbox4( uint8_t index ) const
     {
         // Random 2-bit s-box
         static const uint8_t sbox4[4] = { 0x3, 0x2, 0x0, 0x1 };
         return sbox4[index];
     }
-    __host__ __device__ uint8_t sbox16( uint8_t index ) const
+    __device__ uint8_t sbox16( uint8_t index ) const
     {
         // Random 4-bit sbox
         static const uint8_t sbox16[16] = { 0xC, 0x5, 0x0, 0xE, 0x9, 0x3, 0xA, 0xD,
@@ -159,7 +150,7 @@ private:
         return sbox16[index];
     }
 
-    __host__ __device__ uint8_t sbox256( uint8_t index ) const
+    __device__ uint8_t sbox256( uint8_t index ) const
     {
         // S-Box used by AES
         static const uint8_t sbox256[256] =
