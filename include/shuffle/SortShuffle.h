@@ -9,7 +9,7 @@
 #include "shuffle/Shuffle.h"
 #include <algorithm>
 
-template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = GPURandomGenerator>
 class SortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:
@@ -21,12 +21,13 @@ public:
             thrust::copy( in_container.begin(), in_container.begin() + num, out_container.begin() );
         }
 
-        // Initialise key vector with random values
-        thrust::host_vector<uint64_t> keys( num );
-        RandomGenerator random_generator( seed );
-        std::generate( keys.begin(), keys.end(), random_generator );
-
-        thrust::device_vector<uint64_t> d_keys( keys );
+        thrust::counting_iterator<uint64_t> offsets;
+        thrust::device_vector<uint64_t> d_keys( num );
+        thrust::transform( thrust::device, offsets, offsets + num, d_keys.begin(),
+                           [seed] __device__( uint64_t idx ) {
+                               RandomGenerator gen( seed, idx );
+                               return gen();
+                           } );
 
         // Sort by keys
         thrust::sort_by_key( d_keys.begin(), d_keys.end(), out_container.begin() );

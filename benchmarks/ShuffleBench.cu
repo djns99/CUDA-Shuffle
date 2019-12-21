@@ -1,8 +1,9 @@
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
+#include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
-#include "shuffle/PrimeFieldBijectiveShuffle.h"
+#include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
@@ -60,14 +61,15 @@ BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveSortShuffle<thrust::dev
     ->Apply( sortArgsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveScanShuffle<thrust::device_vector<uint8_t>> )
     ->Apply( sortArgsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, PrimeFieldBijectiveShuffle<thrust::device_vector<uint8_t>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, PrimeFieldBijectiveSortShuffle<thrust::device_vector<uint8_t>> )
-    ->Apply( sortArgsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, PrimeFieldBijectiveScanShuffle<thrust::device_vector<uint8_t>> )
-    ->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveShuffle<thrust::device_vector<uint8_t>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveSortShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveShuffle<thrust::device_vector<uint8_t>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveSortShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveScanShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<uint8_t>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FisherYatesShuffle<std::vector<uint8_t>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );
 // Too slow
 // BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveShuffle<thrust::device_vector<uint8_t>> )->Apply( argsGenerator );
 // BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveSortShuffle<thrust::device_vector<uint8_t>> )->Apply( sortArgsGenerator );

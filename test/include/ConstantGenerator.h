@@ -1,30 +1,36 @@
 #pragma once
 #include <cstdint>
+#include <cuda_runtime.h>
 
 class ConstantGenerator
 {
 public:
     typedef uint64_t result_type;
 
-    ConstantGenerator() : constant( 0 )
+    __host__ ConstantGenerator() : constant( 0 )
     {
     }
 
-    ConstantGenerator( uint64_t constant ) : constant( constant )
+    __host__ ConstantGenerator( uint64_t constant ) : constant( constant )
     {
     }
 
-    uint64_t operator()()
+    __device__ ConstantGenerator( uint64_t constant, uint64_t stride )
+        : constant( constant + stride )
+    {
+    }
+
+    __host__ __device__ uint64_t operator()()
     {
         return constant;
     }
 
-    constexpr static uint64_t max()
+    __host__ __device__ constexpr static uint64_t max()
     {
         return UINT64_MAX;
     }
 
-    constexpr static uint64_t min()
+    __host__ __device__ constexpr static uint64_t min()
     {
         return 0;
     }

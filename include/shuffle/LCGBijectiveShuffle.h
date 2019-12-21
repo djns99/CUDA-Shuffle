@@ -4,10 +4,10 @@
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
 
-class PrimeFieldBijectiveFunction
+class LCGBijectiveFunction
 {
 public:
-    PrimeFieldBijectiveFunction()
+    LCGBijectiveFunction()
     {
     }
 
@@ -17,8 +17,7 @@ public:
         modulus = roundUpPower2( capacity );
         // Must be odd so it is coprime to modulus
         multiplier = ( random_function() * 2 + 1 ) % modulus;
-        pre_addition = random_function() % modulus;
-        post_addition = random_function() % modulus;
+        addition = random_function() % modulus;
     }
 
     uint64_t getMappingRange() const
@@ -30,7 +29,7 @@ public:
     {
         // Modulus must be power of two
         assert( ( modulus & ( modulus - 1 ) ) == 0 );
-        return ( ( ( val + pre_addition ) * multiplier ) + post_addition ) & ( modulus - 1 );
+        return ( ( val * multiplier ) + addition ) & ( modulus - 1 );
     }
 
 private:
@@ -50,18 +49,17 @@ private:
 
     uint64_t modulus;
     uint64_t multiplier;
-    uint64_t pre_addition;
-    uint64_t post_addition;
+    uint64_t addition;
 };
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-using PrimeFieldBijectiveShuffle =
-    BijectiveFunctionShuffle<BijectiveFunctionCompressor<PrimeFieldBijectiveFunction>, ContainerType, RandomGenerator>;
+using LCGBijectiveShuffle =
+    BijectiveFunctionShuffle<BijectiveFunctionCompressor<LCGBijectiveFunction>, ContainerType, RandomGenerator>;
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-using PrimeFieldBijectiveSortShuffle =
-    BijectiveFunctionSortShuffle<PrimeFieldBijectiveFunction, ContainerType, RandomGenerator>;
+using LCGBijectiveSortShuffle =
+    BijectiveFunctionSortShuffle<LCGBijectiveFunction, ContainerType, RandomGenerator>;
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-using PrimeFieldBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<PrimeFieldBijectiveFunction, ContainerType, RandomGenerator>;
+using LCGBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<LCGBijectiveFunction, ContainerType, RandomGenerator>;
