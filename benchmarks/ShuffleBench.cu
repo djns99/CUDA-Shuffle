@@ -25,10 +25,12 @@ static void benchmarkFunction( benchmark::State& state )
 
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
-
+    int seed=0;
     for( auto _ : state )
     {
-        shuffler( in_container, out_container );
+        shuffler( in_container, out_container, seed);
+        checkCudaError(cudaDeviceSynchronize());
+        seed++;
     }
 
     state.SetItemsProcessed( state.iterations() * num_to_shuffle );
