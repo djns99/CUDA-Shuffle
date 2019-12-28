@@ -5,7 +5,7 @@
 #include <thrust/gather.h>
 #include <thrust/scan.h>
 #include <thrust/transform.h>
-
+#include <cub/cub.cuh>
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
 
@@ -23,6 +23,9 @@ public:
         uint64_t capacity = mapping_function.getMappingRange();
 
         thrust::counting_iterator<uint64_t> indexes( 0 );
+
+
+        /*
         thrust::device_vector<uint64_t> mappings( capacity );
         auto mapping_it = mappings.begin();
         thrust::transform( indexes, indexes + capacity, mapping_it,
@@ -51,6 +54,7 @@ public:
 
         thrust::gather_if( mapping_it, mapping_it + capacity, is_valid_it, in_container.begin(),
                            out_permutation_iterator );
+                           */
     }
 
     bool supportsInPlace() override

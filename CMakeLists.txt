@@ -4,6 +4,7 @@ project(SummerShuffle LANGUAGES CXX CUDA)
 set(CMAKE_CXX_STANDARD 17)
 include_directories(SYSTEM ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/vendor/nvidia/cub)
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 
