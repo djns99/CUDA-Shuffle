@@ -4,12 +4,8 @@
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
 #include <cub/cub.cuh>
-#include <thrust/copy.h>
-#include <thrust/gather.h>
 #include <thrust/iterator/discard_iterator.h>
-#include <thrust/iterator/transform_output_iterator.h>
-#include <thrust/scan.h>
-#include <thrust/transform.h>
+#include <thrust/iterator/transform_iterator.h>
 
 
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
