@@ -19,6 +19,7 @@ ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
 DerivePointerBinding: false
+FixNamespaceComments: true
 IndentCaseLabels: true
 IndentFunctionDeclarationAfterType: false
 IndentWidth: 4
@@ -33,6 +34,7 @@ PenaltyExcessCharacter: 1
 PenaltyReturnTypeOnItsOwnLine: 100
 PointerBindsToType: true
 PointerAlignment: Left
+ReflowComments: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Never
 SpaceInEmptyParentheses: false

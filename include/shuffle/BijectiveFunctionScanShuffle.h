@@ -18,6 +18,7 @@ public:
     {
         temp_storage.resize( 1 << 16 );
     }
+
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
         using ValueT = typename ContainerType::value_type;
@@ -46,10 +47,9 @@ public:
 
         auto output_it = out_container.begin();
         // Determine temporary device storage requirements
-        void* d_temp_storage = NULL;
         size_t temp_storage_bytes = 0;
-        cub::DeviceSelect::Flagged( d_temp_storage, temp_storage_bytes, mapping_it, flag_it,
-                                    output_it, thrust::discard_iterator<int>(), capacity );
+        cub::DeviceSelect::Flagged( nullptr, temp_storage_bytes, mapping_it, flag_it, output_it,
+                                    thrust::discard_iterator<int>(), capacity );
         // Allocate temporary storage
         if( temp_storage.size() < temp_storage_bytes )
         {

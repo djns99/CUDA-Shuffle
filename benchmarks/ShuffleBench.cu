@@ -1,12 +1,12 @@
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
+#include "GatherShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
-#include "shuffle/GatherShuffle.h"
-#include "shuffle/ScatterShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
+#include "ScatterShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include <benchmark/benchmark.h>
@@ -27,11 +27,11 @@ static void benchmarkFunction( benchmark::State& state )
 
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
-    int seed=0;
+    int seed = 0;
     for( auto _ : state )
     {
-        shuffler( in_container, out_container, seed);
-        checkCudaError(cudaDeviceSynchronize());
+        shuffler( in_container, out_container, seed );
+        checkCudaError( cudaDeviceSynchronize() );
         seed++;
     }
 
@@ -58,8 +58,10 @@ static void sortArgsGenerator( benchmark::internal::Benchmark* b )
 
 
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveSortShuffle<thrust::device_vector<uint64_t>> )->Apply( sortArgsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveScanShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveSortShuffle<thrust::device_vector<uint64_t>> )
+    ->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveScanShuffle<thrust::device_vector<uint64_t>> )
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveSortShuffle<thrust::device_vector<uint64_t>> )
     ->Apply( sortArgsGenerator );
