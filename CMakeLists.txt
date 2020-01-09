@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(SummerShuffle LANGUAGES C CXX CUDA)
+project(SummerShuffle LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 include_directories(SYSTEM ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
