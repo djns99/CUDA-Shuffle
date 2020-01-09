@@ -7,12 +7,25 @@
 template <uint64_t num_rounds>
 class FeistelBijectiveFunction
 {
+private:
+    struct RoundState
+    {
+        uint32_t left;
+        uint32_t right;
+    };
+
 public:
     template <class RandomGenerator>
     void init( uint64_t capacity, RandomGenerator& random_function )
     {
-        side_bits = getCipherBits( capacity );
-        side_mask = ( 1ull << side_bits ) - 1;
+        uint64_t total_bits = getCipherBits( capacity );
+        // Half bits rounded down
+        left_side_bits = total_bits / 2;
+        left_side_mask = ( 1ull << left_side_bits ) - 1;
+        // Half the bits rounded up
+        right_side_bits = total_bits - left_side_bits;
+        right_side_mask = ( 1ull << right_side_bits ) - 1;
+
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
             key[i][0] = random_function();
@@ -23,72 +36,39 @@ public:
 
     uint64_t getMappingRange() const
     {
-        return 1ull << ( side_bits * 2 );
+        return 1ull << ( left_side_bits + right_side_bits );
     }
     __device__ uint64_t operator()( const uint64_t val ) const
     {
-        RoundState state = { ( uint32_t )( val >> side_bits ), ( uint32_t )( val & side_mask ) };
+        // Extract the right and left sides of the input
+        uint32_t left = ( uint32_t )( val >> right_side_bits );
+        uint32_t right = ( uint32_t )( val & right_side_mask );
+        RoundState state = { left, right };
 
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
             state = doRound( state, i );
         }
 
-        return state.getValue( side_bits );
+        // Check we have the correct number of bits on each side
+        assert( ( state.left >> left_side_bits ) == 0 );
+        assert( ( state.right >> right_side_bits ) == 0 );
+
+        // Combine the left and right sides together to get result
+        return state.left << right_side_bits | state.right;
     }
 
 private:
     uint64_t getCipherBits( uint64_t capacity )
     {
-        // Have at least 8 bits worth of key for sbox
-        if( capacity < 256 )
-            return 4;
         uint64_t i = 0;
         while( capacity != 0 )
         {
             i++;
-            capacity >>= 2;
+            capacity >>= 1;
         }
         return i;
     }
-
-    struct RoundState
-    {
-        uint32_t left, right;
-
-        __device__ uint64_t getValue( uint64_t side_bits ) const
-        {
-            return ( ( (uint64_t)left ) << side_bits ) | right;
-        }
-    };
-
-    // __device__ uint32_t applyKey( const uint32_t in_value, const uint32_t key ) const
-    // {
-    //     uint32_t value = in_value ^ key;
-    //     uint32_t new_val = 0;
-    //     for( uint64_t i = 0; i <= side_bits - 4; i += 4 )
-    //     {
-    //         new_val = ( new_val << 4 ) | sbox16( ( value >> i ) & 0xF );
-    //     }
-    //     return new_val & side_mask;
-    // }
-
-    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
-    // {
-    //     value ^= key;
-    //     for( uint64_t i = 0; i < 5; i++ )
-    //     {
-    //         uint64_t key_region = ( key >> ( i * 12 ) ) & 0xFFF;
-    //         uint64_t shift1 = key_region & 0x3F;
-    //         uint64_t shift2 = key_region >> 6;
-    //         value ^= sbox256[( value >> shift1 ) & 0xFF] << shift2;
-    //     }
-    //     for( uint64_t i = 0; i < 64; i += side_bits )
-    //     {
-    // value ^= (value >> i) & side_mask;
-    //     }
-    //     return value & side_mask;
-    // }
 
     /*
      * wyhash64 hash function
@@ -109,6 +89,7 @@ private:
         value = wyhash64( value );
         // Initialise u,v,w for random number generator
         uint64_t u = value ^ key[0];
+        // Mix the bits so we aren't affecting the same key bits
         value ^= value >> 12;
         value ^= value << 25;
         value ^= value >> 27;
@@ -126,27 +107,27 @@ private:
         uint64_t x = u ^ ( u << 21 );
         x ^= x >> 35;
         x ^= x << 4;
-        return ( ( x + v ) ^ w ) & side_mask;
+        return ( ( x + v ) ^ w ) & left_side_mask;
     }
 
     __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
-        uint32_t new_left = state.right;
-        uint32_t new_right = state.left ^ applyKey( state.right, key[round] );
-        return { new_left, new_right };
+        const uint32_t new_left = state.right & left_side_mask;
+        const uint32_t round_function_res = state.left ^ applyKey( state.right, key[round] );
+        if( right_side_bits != left_side_bits )
+        {
+            // Upper bit of the old right becomes lower bit of new right if we have odd length feistel
+            const uint32_t new_right = ( round_function_res << 1ull ) | state.right >> left_side_bits;
+            return { new_left, new_right };
+        }
+        return { new_left, round_function_res };
     }
 
-    uint64_t side_bits;
-    uint64_t side_mask;
+    uint64_t right_side_bits;
+    uint64_t left_side_bits;
+    uint64_t right_side_mask;
+    uint64_t left_side_mask;
     uint64_t key[num_rounds][3];
-
-    __device__ uint8_t sbox16( uint8_t index ) const
-    {
-        // Random 4-bit s-box
-        static const uint8_t sbox16[16] = { 0xC, 0x5, 0x0, 0xE, 0x9, 0x3, 0xA, 0xD,
-                                            0xB, 0x6, 0x7, 0x8, 0x4, 0xF, 0x1, 0x2 };
-        return sbox16[index];
-    }
 };
 
 static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 12;
