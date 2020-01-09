@@ -1,8 +1,9 @@
 #include "fisher_yates.h"
+#include <cstdint>
 
 void merge( unsigned int* t, unsigned int m, unsigned int n );
 
-void parallel_merge_shuffle( unsigned int* t, unsigned int n )
+void parallel_merge_shuffle( unsigned int* t, uint64_t n )
 {
     unsigned int c = 0;
     while( ( n >> c ) > cutoff )

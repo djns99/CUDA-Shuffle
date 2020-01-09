@@ -1,4 +1,4 @@
-#include "random.c"
+#include "random.h"
 #include <immintrin.h>
 
 #define load( x ) _mm_loadu_ps( (float*)( x ) )
@@ -10,10 +10,10 @@
 
 void merge( unsigned int* t, unsigned int m, unsigned int n )
 {
-    __v4si perm1 = { 303239696, 1803315264, 3166732288, 3221225472 };
-    __v4si perm2 = { 0, 1077952576, 2483065856, 3918790656 };
-    __v4si mask1 = { 1073741823, 54476799, 197439, 3 };
-    __v4si mask2 = { 858993459, 252645135, 16711935, 65535 };
+    __v4su perm1 = { 303239696, 1803315264, 3166732288, 3221225472 };
+    __v4su perm2 = { 0, 1077952576, 2483065856, 3918790656 };
+    __v4su mask1 = { 1073741823, 54476799, 197439, 3 };
+    __v4su mask2 = { 858993459, 252645135, 16711935, 65535 };
     unsigned int* u = t;
     unsigned int* v = t + m;
     unsigned int* w = t + n;

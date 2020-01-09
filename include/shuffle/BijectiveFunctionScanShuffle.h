@@ -61,7 +61,7 @@ public:
                                     thrust::discard_iterator<int>(), capacity );
     }
 
-    bool supportsInPlace() override
+    bool supportsInPlace() const override
     {
         return false;
     }

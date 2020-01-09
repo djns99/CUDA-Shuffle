@@ -25,7 +25,7 @@ public:
         thrust::gather( gather_key, gather_key + num, in_container.begin(), out_container.begin() );
     }
 
-    bool supportsInPlace() override
+    bool supportsInPlace() const override
     {
         return false;
     }

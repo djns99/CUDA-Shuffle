@@ -46,7 +46,12 @@ public:
         shuffle( in_container, out_container );
     }
 
-    virtual bool supportsInPlace()
+    virtual bool supportsInPlace() const
+    {
+        return true;
+    }
+
+    virtual bool isDeterministic() const
     {
         return true;
     }

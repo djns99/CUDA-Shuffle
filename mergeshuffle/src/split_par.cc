@@ -3,7 +3,7 @@
 #ifdef __AVX__
 #include "split_vec.h"
 #else
-#include "split.h"
+// #include "split.h"
 #endif
 
 #include <thread>
@@ -30,7 +30,7 @@ void rao_sandelius_shuffle_thread( T* start, T* end )
         }
         else
         {
-            std::thread thread( []() {
+            std::thread thread( [mid, end]() {
                 rao_sandelius_shuffle_thread( mid, end );
             });
             rao_sandelius_shuffle_thread( start, mid );
@@ -39,8 +39,12 @@ void rao_sandelius_shuffle_thread( T* start, T* end )
     }
 }
 
-template<class T>
-void rao_sandelius_shuffle( T* t, uint64_t n )
+void rao_sandelius_shuffle( uint32_t* t, uint64_t n )
+{
+    rao_sandelius_shuffle_thread( t, t + n );
+}
+
+void rao_sandelius_shuffle( uint64_t* t, uint64_t n )
 {
     rao_sandelius_shuffle_thread( t, t + n );
 }

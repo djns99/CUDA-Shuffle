@@ -85,10 +85,11 @@ static inline unsigned long random_int( struct random* r, unsigned long n )
     }
 }
 
-static inline void swap( unsigned int* a, unsigned int* b )
+template <class T>
+static inline void swap( T* a, T* b )
 {
-    unsigned int x = *a;
-    unsigned int y = *b;
+    T x = *a;
+    T y = *b;
     *a = y;
     *b = x;
 }

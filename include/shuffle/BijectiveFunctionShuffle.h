@@ -38,7 +38,7 @@ public:
         //               transform_it_begin ) );
     }
 
-    bool supportsInPlace() override
+    bool supportsInPlace() const override
     {
         return false;
     }

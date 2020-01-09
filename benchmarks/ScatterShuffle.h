@@ -25,7 +25,7 @@ public:
         thrust::scatter( in_container.begin(), in_container.end(), scatter_key, out_container.begin() );
     }
 
-    bool supportsInPlace() override
+    bool supportsInPlace() const override
     {
         return false;
     }

@@ -2,7 +2,8 @@
 
 unsigned long cutoff = 0x10000;
 
-void fisher_yates( unsigned int* t, unsigned int n )
+template <class T>
+void fisher_yates( T* t, unsigned int n )
 {
     struct random r = { 0, 0 };
 

@@ -5,6 +5,7 @@
 #include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
+#include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
@@ -56,6 +57,11 @@ public:
         return shuffle.supportsInPlace();
     }
 
+    bool isDeterministic()
+    {
+        return shuffle.isDeterministic();
+    }
+
     bool isConstantRandomGenerator()
     {
         return std::is_same<RandomGenerator, ConstantGenerator>::value;
@@ -66,6 +72,7 @@ using ShuffleTypes =
     ::testing::Types<FisherYatesShuffle<>,
                      GPUSwapShuffle<>,
                      StdShuffle<>,
+                     MergeShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
                      LCGBijectiveScanShuffle<>,
@@ -111,6 +118,11 @@ TYPED_TEST( FunctionalTests, SameValues )
 
 TYPED_TEST( FunctionalTests, Detereministic )
 {
+    if( !this->isDeterministic() )
+    {
+        // GTEST_SKIP();
+        return;
+    }
     typename FunctionalTests<TypeParam>::ContainerType copy_container( this->num_elements, 0 );
     this->shuffle( this->reference_container, this->shuffled_container, 0 );
     this->shuffle( this->reference_container, copy_container, 0 );
@@ -120,6 +132,11 @@ TYPED_TEST( FunctionalTests, Detereministic )
 
 TYPED_TEST( FunctionalTests, DefaultSeedIsZero )
 {
+    if( !this->isDeterministic() )
+    {
+        // GTEST_SKIP();
+        return;
+    }
     typename FunctionalTests<TypeParam>::ContainerType copy_container( this->num_elements, 0 );
     this->shuffle( this->reference_container, this->shuffled_container );
     this->shuffle( this->reference_container, copy_container, 0 );
@@ -157,7 +174,7 @@ TYPED_TEST( FunctionalTests, ShuffleHalf )
 
 TYPED_TEST( FunctionalTests, ShuffleInplace )
 {
-    if( !this->supportsInPlace() )
+    if( !this->supportsInPlace() || !this->isDeterministic() )
     {
         // GTEST_SKIP();
         return;

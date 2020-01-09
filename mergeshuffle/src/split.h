@@ -1,8 +1,9 @@
 #include "random.h"
 
-unsigned int* split( unsigned int* start, unsigned int* end )
+template <class T>
+T* split( T* start, unsigned int* end )
 {
-    unsigned int* mid = start;
+    T* mid = start;
     struct random r = { 0, 0 };
     while( start < end )
     {
