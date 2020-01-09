@@ -7,6 +7,3 @@
 [submodule "vendor/nvidia/cub"]
 	path = vendor/nvidia/cub
 	url = https://github.com/NVlabs/cub.git
-[submodule "vendor/axel-bacher/mergeshuffle"]
-	path = vendor/axel-bacher/mergeshuffle
-	url = https://github.com/axel-bacher/mergeshuffle.git

@@ -17,16 +17,6 @@ add_subdirectory(vendor/google/benchmark)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(vendor/google/googletest/googletest)
 
-set(MERGE_SHUFFLE_DIR ${CMAKE_SOURCE_DIR}/vendor/axel-bacher/mergeshuffle)
-
-add_custom_command(
-    OUTPUT ${MERGE_SHUFFLE_DIR}/merge.o
-    WORKING_DIRECTORY ${MERGE_SHUFFLE_DIR}
-    COMMAND cat ${MERGE_SHUFFLE_DIR}/compile | sed "/-no-pie/! s/gcc/gcc -no-pie/g" | tail -n+2 | bash
- )
-
-add_library( mergeshuffle STATIC ${MERGE_SHUFFLE_DIR}/merge.o )
-set_target_properties(mergeshuffle PROPERTIES LINKER_LANGUAGE C)
-
 add_subdirectory(test)
 add_subdirectory(benchmarks)
+add_subdirectory(mergeshuffle)
