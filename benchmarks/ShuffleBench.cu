@@ -10,6 +10,7 @@
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include "shuffle/MergeShuffle.h"
+#include "shuffle/RaoSandeliusShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <sstream>
@@ -59,6 +60,7 @@ static void sortArgsGenerator( benchmark::internal::Benchmark* b )
 
 using DataType = uint32_t;
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, RaoSandeliusShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveSortShuffle<thrust::device_vector<DataType>> )
     ->Apply( sortArgsGenerator );

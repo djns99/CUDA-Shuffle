@@ -16,11 +16,8 @@ public:
     {
         thrust::counting_iterator<uint64_t> counting( 0 );
         auto gather_key = thrust::make_transform_iterator( counting, [=] __device__( uint64_t idx ) {
-            thrust::minstd_rand rng( seed );
-            rng.discard( idx );
-
-            thrust::uniform_int_distribution<uint64_t> dist( 0, num - 1 );
-            return dist( rng );
+            // Stride by some prime greater than block size  so we dont get coalesced memory
+            return ( idx * 1181 ) % num;
         } );
         thrust::gather( gather_key, gather_key + num, in_container.begin(), out_container.begin() );
     }

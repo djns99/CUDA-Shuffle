@@ -6,6 +6,7 @@
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
+#include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
@@ -70,9 +71,9 @@ public:
 
 using ShuffleTypes =
     ::testing::Types<FisherYatesShuffle<>,
-                     GPUSwapShuffle<>,
                      StdShuffle<>,
                      MergeShuffle<>,
+                     RaoSandeliusShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
                      LCGBijectiveScanShuffle<>,

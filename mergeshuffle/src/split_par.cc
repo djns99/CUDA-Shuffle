@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <cstdint>
 
-extern unsigned long cutoff;
 unsigned long cutoff2 = 0x100000;
 
 template<class T>

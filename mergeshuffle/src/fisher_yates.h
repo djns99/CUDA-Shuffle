@@ -1,6 +1,7 @@
+#pragma once
 #include "random.h"
 
-unsigned long cutoff = 0x10000;
+static unsigned long cutoff = 0x10000;
 
 template <class T>
 void fisher_yates( T* t, unsigned int n )
