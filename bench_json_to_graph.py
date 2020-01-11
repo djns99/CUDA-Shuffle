@@ -2,6 +2,8 @@ import json
 import matplotlib
 import matplotlib.pyplot as plt
 import sys
+from labellines import labelLine, labelLines
+import numpy as np
 
 def is_mean( entry ):
     return "name" in entry and "_mean" == entry["name"][-5:]
@@ -20,7 +22,7 @@ def results_to_csv(results):
     with open(sys.argv[2], "w") as out_file:
         out_file.write("\n".join([",".join(x) for x in csv_list]))
 
-to_keep = [("FeistelBijectiveScan", "Feistel"), ("LCGBijectiveScan", "LCG"), ("MergeShuffle", "Merge"), ("RaoSandelius", "Rao-Sandelius"), ("FisherYates", "Fisher-Yates"), ("Gather", "Gather")]
+to_keep = [("FeistelBijectiveScan", "Feistel"), ("LCGBijectiveScan", "LCG"), ("MergeShuffle", "Merge"), ("RaoSandelius", "Rao-Sandelius"), ("FisherYates", "Fisher-Yates"), ("Gather", "Random Memory Access")]
 def filter_out_unwanted_algorithms( results ):
     output = {}
     for key in results.keys():
@@ -40,6 +42,7 @@ with open(sys.argv[1], "r") as read_file:
     func = lambda entry : is_mean(entry)
     means = list(filter( func, data["benchmarks"] ))
     results = {}
+
     for mean in means:
         split_name = mean["run_name"].split("/")
         run_name = split_name[0].split("<")[1] + (" Power of Two" if split_name[2] == "0" else " Non-Power of Two")
@@ -56,11 +59,15 @@ with open(sys.argv[1], "r") as read_file:
         for size in sorted(test_res.keys()):
             list1.append(size)
             list2.append(test_res[size])
-        plt.plot(list1, list2, label=test_name, linewidth=1)
+        plt.plot(list1, list2, label=test_name, linewidth=2)
     plt.xlabel("Input Size")
     plt.ylabel("Throughput (millions item/s)")
     plt.xscale("log", basex=2)
-    plt.legend(frameon=False, shadow=False, framealpha=0)
+    plt.yscale("log")
+    # plt.legend(frameon=False, shadow=False, framealpha=0)
     plt.title("Shuffle Algorithm Performance")
-    # plt.show()
+    # labelLines(plt.gca().get_lines(), align=False, zorder=10, xvals=[2**13, 2**20, 2**24, 2**17, 2**13, 2**15], bbox=dict(alpha=0), color="black")
+    ax = plt.subplot(111)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
     plt.savefig(sys.argv[2], transparent=True, orientation='landscape',bbox_inches="tight", papertype="a0", quality=100, dpi=1000)
