@@ -7,11 +7,10 @@
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
+#include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
-#include "shuffle/MergeShuffle.h"
-#include "shuffle/RaoSandeliusShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <sstream>
