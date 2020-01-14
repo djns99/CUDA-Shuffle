@@ -1,9 +1,7 @@
 // Routines to get random data (bits and integers).
 // this file should be directly included; we don't do separate compilation to
 // enable inlining of functions.
-
-#ifndef RANDOM_C
-#define RANDOM_C
+#pragma once
 
 #ifdef COUNT
 extern unsigned long count;
@@ -93,5 +91,3 @@ static inline void swap( T* a, T* b )
     *a = y;
     *b = x;
 }
-
-#endif

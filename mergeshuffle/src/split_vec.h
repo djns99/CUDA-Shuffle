@@ -1,3 +1,4 @@
+#pragma once
 #include "random.h"
 #include <immintrin.h>
 #include <string.h>
