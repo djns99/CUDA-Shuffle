@@ -11,30 +11,60 @@
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
+#include "CudaHelpers.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <sstream>
 #include <thrust/device_vector.h>
 #include <vector>
 
+using DataType = uint64_t;
 
 template <class ShuffleFunction>
 static void benchmarkFunction( benchmark::State& state )
 {
     ShuffleFunction shuffler;
     using ContainerType = typename ShuffleFunction::container_type;
+    constexpr bool isScatterGather = std::is_same<ShuffleFunction, GatherShuffle<thrust::device_vector<DataType>>>::value || std::is_same<ShuffleFunction, ScatterShuffle<thrust::device_vector<DataType>>>::value;
 
     // Shuffle second param adds 0 or 1 to compare power of two (best case) vs. one above power of two (worst case)
     const uint64_t num_to_shuffle = (uint64_t)state.range( 1 ) + state.range( 0 );
 
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
-    int seed = 0;
-    for( auto _ : state )
+
+    if constexpr ( isScatterGather )
     {
-        shuffler( in_container, out_container, seed );
-        checkCudaError( cudaDeviceSynchronize() );
-        seed++;
+        thrust::host_vector<uint64_t> h_gather_container( num_to_shuffle );
+        thrust::device_vector<uint64_t> d_gather_container( num_to_shuffle );
+        StdShuffle<thrust::host_vector<uint64_t>> temp_shuffler;
+        std::iota( h_gather_container.begin(), h_gather_container.end(), 0 );
+
+        int seed = 0;
+        for( auto _ : state )
+        {
+            state.PauseTiming();
+            if( seed % 10 == 0)
+            {
+                temp_shuffler( h_gather_container, h_gather_container, seed );
+                thrust::copy( h_gather_container.begin(), h_gather_container.end(), d_gather_container.begin() );
+            }
+            state.ResumeTiming();
+            // Benchmarks raw gather speed of a random permutation
+            shuffler( in_container, out_container, d_gather_container );
+            checkCudaError( cudaDeviceSynchronize() );
+            seed++;
+        }
+    }
+    else
+    {
+        int seed = 0;
+        for( auto _ : state )
+        {
+            shuffler( in_container, out_container, seed );
+            checkCudaError( cudaDeviceSynchronize() );
+            seed++;
+        }
     }
 
     state.SetItemsProcessed( state.iterations() * num_to_shuffle );
@@ -53,8 +83,6 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
     b->Ranges( { { 1 << 8, 1 << 27 }, { 0, 1 } } );
 }
 
-
-using DataType = uint32_t;
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, RaoSandeliusShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );

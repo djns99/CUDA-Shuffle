@@ -1,3 +1,6 @@
+/**
+ * WyHash implementation based of implementation https://github.com/wangyi-fudan/wyhash
+ */
 #include <cuda_runtime.h>
 
 class WyHash

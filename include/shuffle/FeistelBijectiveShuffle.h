@@ -70,34 +70,6 @@ private:
         return i;
     }
 
-
-    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
-    // {
-    //     // Hash so value affects more than just the lower bits of the key
-    //     value = WyHash::wyhash64_v1( value );
-    //     // Initialise u,v,w for random number generator
-    //     uint64_t u = value ^ key[0];
-    //     // Mix the bits so we aren't affecting the same key bits
-    //     value ^= value >> 12;
-    //     value ^= value << 25;
-    //     value ^= value >> 27;
-    //     uint64_t v = value ^ key[1];
-    //     value ^= value >> 12;
-    //     value ^= value << 25;
-    //     value ^= value >> 27;
-    //     uint64_t w = value ^ key[2];
-    //     // Numerical Recipes recommended random number generator
-    //     u = u * 2862933555777941757LL + 7046029254386353087LL;
-    //     v ^= v >> 17;
-    //     v ^= v << 31;
-    //     v ^= v >> 8;
-    //     w = 4294957665U * ( w & 0xffffffff ) + ( w >> 32 );
-    //     uint64_t x = u ^ ( u << 21 );
-    //     x ^= x >> 35;
-    //     x ^= x << 4;
-    //     return ( ( x + v ) ^ w ) & left_side_mask;
-    // }
-
     __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
     {
         // Hash so value affects more than just the lower bits of the key
