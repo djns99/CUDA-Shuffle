@@ -1,9 +1,9 @@
 #pragma once
+#include "WyHash.h"
 #include "shuffle/BijectiveFunctionCompressor.h"
 #include "shuffle/BijectiveFunctionScanShuffle.h"
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
-#include "WyHash.h"
 
 template <uint64_t num_rounds>
 class FeistelBijectiveFunction
