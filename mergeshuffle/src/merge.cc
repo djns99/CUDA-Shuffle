@@ -1,10 +1,11 @@
-#include "random.c"
+#include "random.h"
 
-void merge( unsigned int* t, unsigned int m, unsigned int n )
+template <class T>
+void merge( T* t, unsigned int m, unsigned int n )
 {
-    unsigned int* u = t;
-    unsigned int* v = t + m;
-    unsigned int* w = t + n;
+    T* u = t;
+    T* v = t + m;
+    T* w = t + n;
 
     struct random r = { 0, 0 };
 

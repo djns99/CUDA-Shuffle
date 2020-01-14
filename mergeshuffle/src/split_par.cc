@@ -6,14 +6,14 @@
 // #include "split.h"
 #endif
 
-#include <thread>
-#include <stdio.h>
 #include <cstdint>
+#include <stdio.h>
+#include <thread>
 
 extern unsigned long cutoff;
 unsigned long cutoff2 = 0x100000;
 
-template<class T>
+template <class T>
 void rao_sandelius_shuffle_thread( T* start, T* end )
 {
     if( end - start <= cutoff )
@@ -30,9 +30,7 @@ void rao_sandelius_shuffle_thread( T* start, T* end )
         }
         else
         {
-            std::thread thread( [mid, end]() {
-                rao_sandelius_shuffle_thread( mid, end );
-            });
+            std::thread thread( [mid, end]() { rao_sandelius_shuffle_thread( mid, end ); } );
             rao_sandelius_shuffle_thread( start, mid );
             thread.join();
         }

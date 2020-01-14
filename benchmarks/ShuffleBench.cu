@@ -5,11 +5,11 @@
 #include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
+#include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
-#include "shuffle/MergeShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <sstream>
@@ -52,38 +52,34 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
     b->Ranges( { { 1 << 8, 1 << 27 }, { 0, 1 } } );
 }
 
-static void sortArgsGenerator( benchmark::internal::Benchmark* b )
-{
-    b->Ranges( { { 1 << 8, 1 << 27 }, { 0, 1 } } );
-}
 
 using DataType = uint32_t;
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveSortShuffle<thrust::device_vector<DataType>> )
-    ->Apply( sortArgsGenerator );
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveScanShuffle<thrust::device_vector<DataType>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveSortShuffle<thrust::device_vector<DataType>> )
-    ->Apply( sortArgsGenerator );
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SPNetworkBijectiveScanShuffle<thrust::device_vector<DataType>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, NoOpBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, GatherShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, ScatterShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<DataType>> )->Apply( sortArgsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FisherYatesShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 // Too slow
 // BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveSortShuffle<thrust::device_vector<uint64_t>> )->Apply( sortArgsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>> )->Apply( sortArgsGenerator );
+// BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveSortShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
+// BENCHMARK_TEMPLATE( benchmarkFunction, LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>> )->Apply( argsGenerator );
 // BENCHMARK_TEMPLATE(benchmarkFunction, GPUSwapShuffle<uint64_t>)->Apply(argsGenerator);
 
 
