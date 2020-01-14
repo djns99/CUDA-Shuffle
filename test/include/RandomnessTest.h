@@ -1,14 +1,12 @@
 #include "DefaultRandomGenerator.h"
-#include "EmptyShuffle.h"
-#include "RandomReverseShuffle.h"
 #include "nist-utils/cephes.h"
 #include "nist-utils/matrix.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
-#include "shuffle/LubyRackoffBijectiveShuffle.h"
+#include "shuffle/MergeShuffle.h"
+#include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
-#include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include "gtest/gtest.h"
 #include <cmath>
@@ -93,5 +91,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, SortShuffle<>, SPNetworkBijectiveShuffle<>, FeistelBijectiveShuffle<>, SPNetworkBijectiveSortShuffle<>, FeistelBijectiveSortShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
