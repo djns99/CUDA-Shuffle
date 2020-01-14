@@ -3,6 +3,7 @@
 #include "shuffle/BijectiveFunctionScanShuffle.h"
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
+#include "WyHash.h"
 
 template <uint64_t num_rounds>
 class FeistelBijectiveFunction
@@ -30,7 +31,6 @@ public:
         {
             key[i][0] = random_function();
             key[i][1] = random_function();
-            key[i][2] = random_function();
         }
     }
 
@@ -70,45 +70,45 @@ private:
         return i;
     }
 
-    /*
-     * wyhash64 hash function
-     */
-    __device__ uint64_t wyhash64( uint64_t wyhash64 ) const
-    {
-        wyhash64 += 0x60bee2bee120fc15;
-        uint64_t x = wyhash64;
-        constexpr uint64_t y = 0xa3b195354a39b70d;
-        constexpr uint64_t z = 0x1b03738712fad5c9;
-        uint64_t w = __mul64hi( x, y ) ^ ( x * y );
-        return __mul64hi( z, w ) ^ ( z * w );
-    }
 
-    __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
+    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key[3] ) const
+    // {
+    //     // Hash so value affects more than just the lower bits of the key
+    //     value = WyHash::wyhash64_v1( value );
+    //     // Initialise u,v,w for random number generator
+    //     uint64_t u = value ^ key[0];
+    //     // Mix the bits so we aren't affecting the same key bits
+    //     value ^= value >> 12;
+    //     value ^= value << 25;
+    //     value ^= value >> 27;
+    //     uint64_t v = value ^ key[1];
+    //     value ^= value >> 12;
+    //     value ^= value << 25;
+    //     value ^= value >> 27;
+    //     uint64_t w = value ^ key[2];
+    //     // Numerical Recipes recommended random number generator
+    //     u = u * 2862933555777941757LL + 7046029254386353087LL;
+    //     v ^= v >> 17;
+    //     v ^= v << 31;
+    //     v ^= v >> 8;
+    //     w = 4294957665U * ( w & 0xffffffff ) + ( w >> 32 );
+    //     uint64_t x = u ^ ( u << 21 );
+    //     x ^= x >> 35;
+    //     x ^= x << 4;
+    //     return ( ( x + v ) ^ w ) & left_side_mask;
+    // }
+
+    __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
     {
         // Hash so value affects more than just the lower bits of the key
-        value = wyhash64( value );
-        // Initialise u,v,w for random number generator
-        uint64_t u = value ^ key[0];
-        // Mix the bits so we aren't affecting the same key bits
-        value ^= value >> 12;
-        value ^= value << 25;
-        value ^= value >> 27;
-        uint64_t v = value ^ key[1];
-        value ^= value >> 12;
-        value ^= value << 25;
-        value ^= value >> 27;
-        uint64_t w = value ^ key[2];
-        // Numerical Recipes recommended random number generator
-        u = u * 2862933555777941757LL + 7046029254386353087LL;
-        v ^= v >> 17;
-        v ^= v << 31;
-        v ^= v >> 8;
-        w = 4294957665U * ( w & 0xffffffff ) + ( w >> 32 );
-        uint64_t x = u ^ ( u << 21 );
-        x ^= x >> 35;
-        x ^= x << 4;
-        return ( ( x + v ) ^ w ) & left_side_mask;
+        return WyHash::wyhash64_v3_key2( key, value ) & left_side_mask;
     }
+
+    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
+    // {
+    //     // Hash so value affects more than just the lower bits of the key
+    //     return WyHash::wyhash64_v3_pair( key, value ) & left_side_mask;
+    // }
 
     __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
@@ -127,10 +127,10 @@ private:
     uint64_t left_side_bits;
     uint64_t right_side_mask;
     uint64_t left_side_mask;
-    uint64_t key[num_rounds][3];
+    uint64_t key[num_rounds][2];
 };
 
-static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 12;
+static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 8;
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using FeistelBijectiveShuffle =
     BijectiveFunctionShuffle<BijectiveFunctionCompressor<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, ContainerType, RandomGenerator>;
