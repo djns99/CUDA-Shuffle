@@ -33,7 +33,7 @@ static void benchmarkFunction( benchmark::State& state )
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
 
-    if constexpr ( isScatterGather )
+    if ( isScatterGather )
     {
         thrust::host_vector<uint64_t> h_gather_container( num_to_shuffle );
         thrust::device_vector<uint64_t> d_gather_container( num_to_shuffle );
@@ -44,14 +44,11 @@ static void benchmarkFunction( benchmark::State& state )
         for( auto _ : state )
         {
             state.PauseTiming();
-            if( seed % 10 == 0)
-            {
-                temp_shuffler( h_gather_container, h_gather_container, seed );
-                thrust::copy( h_gather_container.begin(), h_gather_container.end(), d_gather_container.begin() );
-            }
+            temp_shuffler( h_gather_container, h_gather_container, seed);
+            thrust::copy( h_gather_container.begin(), h_gather_container.end(), in_container.begin() );
             state.ResumeTiming();
             // Benchmarks raw gather speed of a random permutation
-            shuffler( in_container, out_container, d_gather_container );
+            shuffler( in_container, out_container, seed, in_container.size() );
             checkCudaError( cudaDeviceSynchronize() );
             seed++;
         }
