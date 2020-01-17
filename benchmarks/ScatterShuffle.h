@@ -14,12 +14,7 @@ class ScatterShuffle : public Shuffle<ContainerType, RandomGenerator>
 public:
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
-        assert( false );
-    }
-
-    void operator()( const ContainerType& in_container, ContainerType& out_container, thrust::device_vector<uint64_t>& scatter_key )
-    {
-        thrust::scatter( in_container.begin(), in_container.end(), scatter_key.begin(), out_container.begin() );
+        thrust::scatter( in_container.begin(), in_container.end(), in_container.begin(), out_container.begin() );
     }
 
     bool supportsInPlace() const override
