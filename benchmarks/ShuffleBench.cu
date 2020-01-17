@@ -40,6 +40,7 @@ static void benchmarkScatterGather(benchmark::State &state) {
   for (auto _ : state) {
     state.PauseTiming();
     temp_shuffler(tmp, in_container, seed);
+    checkCudaError(cudaDeviceSynchronize());
     state.ResumeTiming();
     // Benchmarks raw gather speed of a random permutation
     shuffler(in_container, out_container, seed);
