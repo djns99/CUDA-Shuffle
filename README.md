@@ -14,5 +14,5 @@ http://arxiv.org/abs/1508.03167
 Implementation in `mergeshuffle` is adapted from:
 https://github.com/axel-bacher/mergeshuffle
 
-WyHash Version 3 used for FeistelNetwork adapted from:
+WyHash Version 4 used for FeistelNetwork adapted from:
 https://github.com/wangyi-fudan/wyhash
