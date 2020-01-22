@@ -23,6 +23,11 @@ private:
     }
 
 public:
+    __device__ static uint64_t wyhash64_v4_key2( const uint64_t key[2], uint64_t seed )
+    {
+        return mum( mum( key[0] ^ seed ^ _wyp0, key[1] ^ seed ^ _wyp1 ) ^ seed, 16 ^ _wyp4 );
+    }
+
     __device__ static uint64_t wyhash64_v3_key2( const uint64_t key[2], uint64_t seed )
     {
         return mum( mum( key[0] ^ seed ^ _wyp0, key[1] ^ seed ^ _wyp1 ), 16 ^ _wyp4 );

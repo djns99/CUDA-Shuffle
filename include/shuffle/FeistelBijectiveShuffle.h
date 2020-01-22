@@ -73,7 +73,7 @@ private:
     __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
     {
         // Hash so value affects more than just the lower bits of the key
-        return WyHash::wyhash64_v3_key2( key, value ) & left_side_mask;
+        return WyHash::wyhash64_v4_key2( key, value ) & left_side_mask;
     }
 
     // __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
