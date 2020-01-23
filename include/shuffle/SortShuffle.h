@@ -6,6 +6,31 @@
 #include <cub/device/device_radix_sort.cuh>
 #include <thrust/transform.h>
 
+template<class ValueType>
+__global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint64_t num )
+{
+    
+    uint64_t tid = threadIdx.x + blockIdx.x * blockDim.x;
+    if( tid >= num - 1 )
+        return;
+    auto me = keys[tid];
+    if( me != keys[tid + 1] )
+        return;
+    if( tid != 0 && keys[ tid - 1 ] == me )
+        return;
+    thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U> rng;
+    uint64_t i;
+    for(i = 0; i < num && keys[tid + i] == me; i++);
+
+    for(; tid < i - 1; tid++)
+    {
+        uint64_t next = rng() % (i - tid);
+        auto copy = values[tid];
+        values[tid] = values[tid + next];
+        values[tid + next] = copy;
+    }
+}
+
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class SortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
@@ -42,7 +67,7 @@ public:
         size_t temp_storage_bytes = 0;
         cub::DeviceRadixSort::SortPairs( NULL, temp_storage_bytes, key_in.data().get(),
                                          key_out.data().get(), in_container.data().get(),
-                                         out_container.data().get(), num );
+                                         out_container.data().get(), num, 0, 64 - __builtin_clzll( num ) );
 
         if( temp_storage_bytes > temp_storage.size() )
         {
@@ -51,7 +76,9 @@ public:
 
         cub::DeviceRadixSort::SortPairs( temp_storage.data().get(), temp_storage_bytes,
                                          key_in.data().get(), key_out.data().get(),
-                                         in_container.data().get(), out_container.data().get(), num );
+                                         in_container.data().get(), out_container.data().get(), num, 0, 64 - __builtin_clzll( num ) );
+
+        fisherYatesIdenticalKey<uint64_t><<<(num + 255) / 256, 256, 0, 0>>>(key_out.data().get(), out_container.data().get(), num);
     }
 
     bool supportsInPlace() const override
