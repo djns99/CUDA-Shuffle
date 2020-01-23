@@ -1,44 +1,61 @@
 #pragma once
 #include <thrust/device_vector.h>
 
-#include <thrust/copy.h>
-#include <thrust/generate.h>
-#include <thrust/sort.h>
-
-#include "DefaultRandomGenerator.h"
+#include "WyHash.h"
 #include "shuffle/Shuffle.h"
-#include <algorithm>
+#include <cub/device/device_radix_sort.cuh>
+#include <thrust/transform.h>
 
-template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class SortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
+private:
+    thrust::device_vector<uint8_t> temp_storage;
+    thrust::device_vector<uint64_t> key_in;
+    thrust::device_vector<uint64_t> key_out;
+
 public:
+    SortShuffle()
+    {
+        temp_storage.resize( 1 << 16 );
+        key_in.resize( 1 << 16 );
+        key_out.resize( 1 << 16 );
+    }
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
-        if( &in_container != &out_container )
+        if( num > key_in.size() )
         {
-            // Copy if we are not doing an inplace operation
-            thrust::copy( in_container.begin(), in_container.begin() + num, out_container.begin() );
+            key_in.resize( num );
+            key_out.resize( num );
         }
 
-        const uint64_t internal_seed = RandomGenerator( seed )();
-        thrust::counting_iterator<uint64_t> offsets;
-        thrust::device_vector<uint64_t> d_keys( num );
-        thrust::transform( thrust::device, offsets, offsets + num, d_keys.begin(),
-                           [internal_seed] __device__( uint64_t idx ) {
-                               // Lehmar
-                               constexpr uint64_t combiner_constant = 0xda942042e4dd58b5;
-                               uint64_t tmp = __umul64hi( internal_seed, combiner_constant ) + idx * combiner_constant;
-                               // Wyhash
-                               tmp += 0x60bee2bee120fc15;
-                               constexpr uint64_t mul_constant1 = 0xa3b195354a39b70d;
-                               tmp = __umul64hi( tmp, mul_constant1 ) ^ ( tmp * mul_constant1 );
-                               constexpr uint64_t mul_constant2 = 0x1b03738712fad5c9;
-                               tmp = __umul64hi( tmp, mul_constant2 ) ^ ( tmp * mul_constant2 );
-                               return tmp;
+        // Initialise key vector with indexes
+        thrust::counting_iterator<uint64_t> counting_begin( 0 );
+        auto counting_end = counting_begin + num;
+        // Inplace transform
+        thrust::transform( thrust::device, counting_begin, counting_end, key_in.begin(),
+                           [seed] __device__( uint64_t val ) -> uint64_t {
+                               return WyHash::wyhash64_v3_pair( val, seed );
                            } );
 
-        // Sort by keys
-        thrust::sort_by_key( thrust::device, d_keys.begin(), d_keys.end(), out_container.begin() );
+        // Determine temporary device storage requirements
+        size_t temp_storage_bytes = 0;
+        cub::DeviceRadixSort::SortPairs( NULL, temp_storage_bytes, key_in.data().get(),
+                                         key_out.data().get(), in_container.data().get(),
+                                         out_container.data().get(), num );
+
+        if( temp_storage_bytes > temp_storage.size() )
+        {
+            temp_storage.resize( temp_storage_bytes );
+        }
+
+        cub::DeviceRadixSort::SortPairs( temp_storage.data().get(), temp_storage_bytes,
+                                         key_in.data().get(), key_out.data().get(),
+                                         in_container.data().get(), out_container.data().get(), num );
+    }
+
+    bool supportsInPlace() const override
+    {
+        return false;
     }
 };
