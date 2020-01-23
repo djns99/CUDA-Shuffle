@@ -5,9 +5,12 @@
 #include "shuffle/Shuffle.h"
 #include <cub/device/device_radix_sort.cuh>
 #include <thrust/transform.h>
+#include <thrust/random.h>
+
+using GPURand = thrust::random::taus88;
 
 template<class ValueType>
-__global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint64_t num )
+__global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint64_t num, uint64_t key1, uint64_t key2 )
 {
     
     uint64_t tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -18,7 +21,8 @@ __global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint
         return;
     if( tid != 0 && keys[ tid - 1 ] == me )
         return;
-    thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U> rng;
+    uint64_t key[2] = {key1, key2};
+    GPURand rng( WyHash::wyhash64_v4_key2( key, tid ) );
     uint64_t i;
     for(i = 0; i < num && keys[tid + i] == me; i++);
 
@@ -31,7 +35,7 @@ __global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint
     }
 }
 
-template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class SortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
@@ -46,8 +50,13 @@ public:
         key_in.resize( 1 << 16 );
         key_out.resize( 1 << 16 );
     }
+
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
+        RandomGenerator g( seed );
+        uint64_t key1[2] = {g(), g()};
+        uint64_t key2_1 = g();
+        uint64_t key2_2 = g();
         if( num > key_in.size() )
         {
             key_in.resize( num );
@@ -59,8 +68,8 @@ public:
         auto counting_end = counting_begin + num;
         // Inplace transform
         thrust::transform( thrust::device, counting_begin, counting_end, key_in.begin(),
-                           [seed] __device__( uint64_t val ) -> uint64_t {
-                               return WyHash::wyhash64_v3_pair( val, seed );
+                           [key1, num] __device__( uint64_t val ) -> uint64_t {
+                               return WyHash::wyhash64_v4_key2( key1, val ) % num;
                            } );
 
         // Determine temporary device storage requirements
@@ -78,7 +87,7 @@ public:
                                          key_in.data().get(), key_out.data().get(),
                                          in_container.data().get(), out_container.data().get(), num, 0, 64 - __builtin_clzll( num ) );
 
-        fisherYatesIdenticalKey<uint64_t><<<(num + 255) / 256, 256, 0, 0>>>(key_out.data().get(), out_container.data().get(), num);
+        fisherYatesIdenticalKey<uint64_t><<<(num + 255) / 256, 256, 0, 0>>>(key_out.data().get(), out_container.data().get(), num, key2_1, key2_2);
     }
 
     bool supportsInPlace() const override

@@ -70,9 +70,10 @@ public:
 };
 
 using ShuffleTypes =
-    ::testing::Types<FisherYatesShuffle<>,
-                     StdShuffle<>,
+    ::testing::Types<StdShuffle<>,
+                     SortShuffle<>,
                      MergeShuffle<>,
+                     FisherYatesShuffle<>,
                      RaoSandeliusShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
