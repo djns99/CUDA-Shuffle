@@ -1,5 +1,6 @@
 #include "ConstantGenerator.h"
 #include "DefaultRandomGenerator.h"
+#include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
@@ -87,6 +88,7 @@ using ShuffleTypes =
                      LubyRackoffBijectiveShuffle<>,
                      LubyRackoffBijectiveSortShuffle<>,
                      LubyRackoffBijectiveScanShuffle<>,
+                     DartThrowing<>,
                      FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      StdShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      LCGBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,

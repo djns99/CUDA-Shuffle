@@ -12,7 +12,6 @@ using GPURand = thrust::random::taus88;
 template<class ValueType>
 __global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint64_t num, uint64_t key1, uint64_t key2 )
 {
-    
     uint64_t tid = threadIdx.x + blockIdx.x * blockDim.x;
     if( tid >= num - 1 )
         return;
