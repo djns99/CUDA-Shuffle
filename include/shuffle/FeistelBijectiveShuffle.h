@@ -38,7 +38,7 @@ public:
     {
         return 1ull << ( left_side_bits + right_side_bits );
     }
-    __device__ uint64_t operator()( const uint64_t val ) const
+    __host__ __device__ uint64_t operator()( const uint64_t val ) const
     {
         // Extract the right and left sides of the input
         uint32_t left = ( uint32_t )( val >> right_side_bits );
@@ -70,19 +70,19 @@ private:
         return i;
     }
 
-    __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
+    __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
     {
         // Hash so value affects more than just the lower bits of the key
         return WyHash::wyhash64_v4_key2( key, value ) & left_side_mask;
     }
 
-    // __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
+    // __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
     // {
     //     // Hash so value affects more than just the lower bits of the key
     //     return WyHash::wyhash64_v3_pair( key, value ) & left_side_mask;
     // }
 
-    __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
+    __host__ __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
         const uint32_t new_left = state.right & left_side_mask;
         const uint32_t round_function_res = state.left ^ applyKey( state.right, key[round] );

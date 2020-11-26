@@ -24,7 +24,7 @@ T* split( T* start, T* end )
     T* mid = start;
     struct random r = { 0, 0 };
 
-    if constexpr( sizeof( T ) == 4 )
+    if( sizeof( T ) == 4 )
     {
         __v4su perm1 = { 303239696u, 1803315264u, 3166732288u, 3221225472u };
         __v4su perm2 = { 0u, 1077952576u, 2483065856u, 3918790656u };

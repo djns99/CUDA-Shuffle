@@ -204,7 +204,7 @@ TYPED_TEST( FunctionalTests, ChangesOrder )
 
 TYPED_TEST( FunctionalTests, SeedsChangeOrder )
 {
-    if( this->isConstantRandomGenerator() )
+    if( this->isConstantRandomGenerator() || !this->isDeterministic() )
     {
         // GTEST_SKIP();
         return;

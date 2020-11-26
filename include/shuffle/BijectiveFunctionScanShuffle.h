@@ -1,10 +1,13 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
+#include <cuda.h>
 #include <thrust/execution_policy.h>
 #include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
+#if( __CUDA_API_VERSION >= 10000 )
 #include <thrust/iterator/transform_output_iterator.h>
+#endif
 #include <thrust/device_vector.h>
 
 
@@ -22,22 +25,6 @@ struct ScanOp
     }
 };
 
-template <class BijectiveFunction>
-struct MakeTupleFunctor
-{
-    uint64_t m;
-    BijectiveFunction mapping_function;
-    MakeTupleFunctor( uint64_t m, BijectiveFunction mapping_function )
-        : m( m ), mapping_function( mapping_function )
-    {
-    }
-    __device__ KeyFlagTuple operator()( uint64_t idx )
-    {
-        auto gather_key = mapping_function( idx );
-        return KeyFlagTuple{ gather_key, gather_key < m };
-    }
-};
-
 template <typename InputIterT, typename OutputIterT>
 struct WritePermutationFunctor
 {
@@ -52,6 +39,22 @@ struct WritePermutationFunctor
             out[x.flag - 1] = in[x.key];
         }
         return 0; // Discarded
+    }
+};
+
+template <class BijectiveFunction>
+struct MakeTupleFunctor
+{
+    uint64_t m;
+    BijectiveFunction mapping_function;
+    MakeTupleFunctor( uint64_t m, BijectiveFunction mapping_function )
+        : m( m ), mapping_function( mapping_function )
+    {
+    }
+    __device__ KeyFlagTuple operator()( uint64_t idx )
+    {
+        auto gather_key = mapping_function( idx );
+        return KeyFlagTuple{ gather_key, gather_key < m };
     }
 };
 
@@ -77,6 +80,8 @@ class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerat
 {
     cached_allocator alloc;
 
+    thrust::device_vector<KeyFlagTuple> result;
+
 public:
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
@@ -94,9 +99,19 @@ public:
         WritePermutationFunctor<decltype( in_container.begin() ), decltype( out_container.begin() )> write_functor{
             m, in_container.begin(), out_container.begin()
         };
+#if( __CUDA_API_VERSION >= 10000 )
         auto output_it =
-            thrust::make_transform_output_iterator( thrust::discard_iterator<size_t>(), write_functor );
+            thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
         thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
+#else
+        if( result.size() < capacity )
+        {
+            result.resize( capacity );
+        }
+        thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity,
+                                result.begin(), ScanOp() );
+        thrust::for_each( result.begin(), result.begin() + capacity, write_functor );
+#endif
     }
 
     bool supportsInPlace() const override
