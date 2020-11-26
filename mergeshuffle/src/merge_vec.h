@@ -26,7 +26,7 @@ void merge( T* t, unsigned int m, unsigned int n )
 
     while( true )
     {
-        if constexpr( sizeof( T ) == 4 )
+        if( sizeof( T ) == 4 )
         {
             // draw four random bits
             consume_bits( &r, 4 );

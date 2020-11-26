@@ -100,7 +100,3 @@ public:
         checkCudaError( cudaStreamSynchronize( stream ) );
     }
 };
-
-template <class ElementType>
-constexpr decltype( &gpuSwapKernel<ElementType, GPUSwapShuffle<ElementType>::elements_per_block_log, 0> )
-    GPUSwapShuffle<ElementType>::kernels[];
