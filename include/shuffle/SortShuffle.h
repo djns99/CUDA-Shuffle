@@ -1,11 +1,9 @@
 #pragma once
-#include <thrust/device_vector.h>
-
+#include "ThrustInclude.h"
 #include "WyHash.h"
 #include "shuffle/Shuffle.h"
 #include <cub/device/device_radix_sort.cuh>
-#include <thrust/random.h>
-#include <thrust/transform.h>
+
 
 using GPURand = thrust::random::taus88;
 

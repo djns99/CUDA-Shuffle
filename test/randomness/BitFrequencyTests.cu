@@ -14,7 +14,7 @@ TYPED_TEST( RandomnessTests, BitFrequency )
     double p_score = erfc( (double)abs( final_score ) / (double)sqrt( num_possible_bits ) );
 
     std::cout << "P Score: " << p_score << std::endl;
-    ASSERT_GT( p_score, this->p_score_significance );
+    ASSERT_GT( p_score, this->p_score_significance ) << num_ones << "/" << num_possible_bits;
 }
 
 TYPED_TEST( RandomnessTests, BlockFrequency )
@@ -44,5 +44,5 @@ TYPED_TEST( RandomnessTests, BlockFrequency )
 
     std::cout << "P Score: " << p_score << std::endl;
 
-    ASSERT_GT( p_score, this->p_score_significance );
+    ASSERT_GT( p_score, this->p_score_significance ) << sum << "/" << block_bits;
 }

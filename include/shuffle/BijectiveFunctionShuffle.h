@@ -1,12 +1,6 @@
 #pragma once
-#include <thrust/device_vector.h>
-
-#include <thrust/copy.h>
-#include <thrust/sequence.h>
-#include <thrust/sort.h>
-#include <thrust/transform.h>
-
 #include "DefaultRandomGenerator.h"
+#include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
 
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>

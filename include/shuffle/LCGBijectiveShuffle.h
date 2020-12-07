@@ -32,6 +32,10 @@ public:
         return ( ( val * multiplier ) + addition ) & ( modulus - 1 );
     }
 
+    constexpr static bool isDeterministic()
+    {
+        return true;
+    }
 private:
     static uint64_t roundUpPower2( uint64_t a )
     {

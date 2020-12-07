@@ -1,10 +1,5 @@
 #pragma once
-#include <thrust/device_vector.h>
-
-#include <thrust/copy.h>
-#include <thrust/generate.h>
-#include <thrust/sort.h>
-
+#include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>

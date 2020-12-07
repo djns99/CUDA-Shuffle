@@ -1,16 +1,10 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
+#include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
-#include <cuda.h>
-#include <thrust/execution_policy.h>
-#include <thrust/iterator/discard_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
-#if( __CUDA_API_VERSION >= 10000 )
-#include <thrust/iterator/transform_output_iterator.h>
-#endif
 #include <cstdint>
+#include <cuda.h>
 #include <cuda_runtime.h>
-#include <thrust/device_vector.h>
 
 __global__ void dartThrowing( uint64_t* bitmap, uint64_t num, uint64_t targets, uint64_t seed )
 {
@@ -19,15 +13,16 @@ __global__ void dartThrowing( uint64_t* bitmap, uint64_t num, uint64_t targets, 
         return;
 
     GPURandomGenerator rng( seed, tid );
+    tid++;
 
     uint64_t index;
     do
     {
         index = rng() % targets;
-    } while( atomicCAS( (unsigned long long*)bitmap + index, 0ull, (unsigned long long)tid + 1 ) != 0 );
+    } while( ( tid = atomicExch( (unsigned long long*)bitmap + index, (unsigned long long)tid ) ) != 0 );
 }
 
-template <class ContainerType = thrust::device_vector<uint64_t>, uint64_t alpha_numerator = 3, uint64_t alpha_denom = 2>
+template <class ContainerType = thrust::device_vector<uint64_t>, uint64_t alpha_numerator = 2, uint64_t alpha_denom = 1>
 class DartThrowing : public Shuffle<ContainerType, GPURandomGenerator>
 {
 public:
@@ -89,7 +84,7 @@ public:
 
     cached_allocator alloc;
     thrust::device_vector<uint64_t> temp_storage;
-    thrust::device_vector<KeyFlagTuple> result;
+    // thrust::device_vector<KeyFlagTuple> result;
 
     virtual void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
@@ -97,24 +92,25 @@ public:
         if( temp_storage.size() < num_targets )
         {
             temp_storage.resize( num_targets );
-            result.resize( num_targets );
+            // result.resize( num_targets );
         }
 
         dartThrowing<<<( num + 255 ) / 256, 256>>>( temp_storage.data().get(), num, num_targets, seed );
 
-        thrust::transform_iterator<MakeTupleFunctor, decltype( temp_storage.begin() ), KeyFlagTuple> tuple_it( temp_storage.begin(),
-                                                                                       MakeTupleFunctor{} );
+        thrust::transform_iterator<MakeTupleFunctor, decltype( temp_storage.begin() ), KeyFlagTuple> tuple_it(
+            temp_storage.begin(), MakeTupleFunctor{} );
         WritePermutationFunctor<decltype( in_container.begin() ), decltype( out_container.begin() )> write_functor{
             num, in_container.begin(), out_container.begin()
         };
-#if( __CUDA_API_VERSION >= 10000 )
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
-        thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + num_targets, output_it, ScanOp() );
-#else
-        thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + num_targets, result.begin(), ScanOp() );
-        thrust::for_each( result.begin(), result.begin() + num_targets, write_functor );
-#endif
+        thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + num_targets,
+                                output_it, ScanOp() );
+
+        // Without transform output iterator
+        // thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + num_targets,
+        //                         result.begin(), ScanOp() );
+        // thrust::for_each( result.begin(), result.begin() + num_targets, write_functor );
     }
 
     bool supportsInPlace() const override

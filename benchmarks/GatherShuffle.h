@@ -1,10 +1,8 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
 #include "shuffle/Shuffle.h"
-#include <thrust/device_vector.h>
-#include <thrust/gather.h>
-#include <thrust/random/linear_congruential_engine.h>
-#include <thrust/random/uniform_int_distribution.h>
+#include "ThrustInclude.h"
+
 
 // Reads from random addresses
 // Doesn't actually shuffle, only used for measurement purposes

@@ -1,28 +1,14 @@
 #pragma once
-#include <thrust/device_vector.h>
+#include "ThrustInclude.h"
 
 #include "shuffle/Shuffle.h"
 #include <cub/device/device_radix_sort.cuh>
-#include <thrust/transform.h>
+
 
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class BijectiveFunctionSortShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
-    static uint64_t roundUpPower2( uint64_t a )
-    {
-        if( a & ( a - 1 ) )
-        {
-            uint64_t i;
-            for( i = 0; a > 1; i++ )
-            {
-                a >>= 1ull;
-            }
-            return 1ull << ( i + 1ull );
-        }
-        return a;
-    }
-
     thrust::device_vector<uint8_t> temp_storage;
     thrust::device_vector<uint64_t> key_in;
     thrust::device_vector<uint64_t> key_out;

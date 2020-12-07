@@ -2,23 +2,13 @@
 // this file should be directly included; we don't do separate compilation to
 // enable inlining of functions.
 #pragma once
+#include <functional>
 
 #ifdef COUNT
 extern unsigned long count;
 #endif
 
-// get a random 64-bit register
-// Uses the "rdrand" instruction giving hardware randomness
-// documentation: https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide
-static inline unsigned long rand64()
-{
-    unsigned long r;
-    __asm__ __volatile__( "0:\n\t"
-                          "rdrand %0\n\t"
-                          "jnc 0b"
-                          : "=r"( r )::"cc" );
-    return r;
-}
+unsigned long mergeShuffleRand64();
 
 // structure containing random bits
 // the c least significant bits of x should contain fresh random data
@@ -40,7 +30,7 @@ static inline void consume_bits( struct random* r, int b )
     r->c -= b;
     if( r->c < 0 )
     {
-        r->x = rand64();
+        r->x = mergeShuffleRand64();
         r->c = 64 - b;
     }
 }

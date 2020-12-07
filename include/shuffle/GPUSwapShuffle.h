@@ -1,8 +1,8 @@
 #pragma once
 #include "CudaHelpers.h"
 #include "DefaultRandomGenerator.h"
+#include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
-#include <thrust/device_vector.h>
 
 __global__ void generatorInitKernel( GPURandomGenerator* gen, uint64_t count, uint64_t seed )
 {
