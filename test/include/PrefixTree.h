@@ -1,5 +1,5 @@
 #pragma once
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -20,7 +20,7 @@ public:
         }
         assert( !leaf );
         auto child_it = getOrInsert<std::unique_ptr<PrefixTreeNode>>( children, *begin,
-                                                                      std::make_unique<PrefixTreeNode> );
+                                                                      &std::make_unique<PrefixTreeNode> );
         child_it->second->add( begin + 1, end );
     }
 

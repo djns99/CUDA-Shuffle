@@ -10,6 +10,7 @@
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
+#include "shuffle/ButterflyBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include "gtest/gtest.h"
@@ -79,6 +80,8 @@ using ShuffleTypes =
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
                      LCGBijectiveScanShuffle<>,
+                     ButterflyNetworkBijectiveSortShuffle<>,
+                     ButterflyNetworkBijectiveScanShuffle<>,
                      FeistelBijectiveShuffle<>,
                      FeistelBijectiveSortShuffle<>,
                      FeistelBijectiveScanShuffle<>,
@@ -105,7 +108,8 @@ using ShuffleTypes =
                      LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
+                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>
+        >;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
 
 TYPED_TEST( FunctionalTests, SameLength )

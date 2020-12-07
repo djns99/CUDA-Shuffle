@@ -15,10 +15,11 @@ public:
             // Copy if we are not doing an inplace operation
             std::copy( in_container.begin(), in_container.begin() + num, out_container.begin() );
         }
-        // TODO Make merge shuffle use our randomness source
-        // RandomGenerator g( seed );
-        srand( seed );
+
+        RandomGenerator g( seed );
+        setMergeShuffleRand64( [&g]() { return g(); } );
         parallel_merge_shuffle( out_container.data(), num );
+        setMergeShuffleRand64( {} );
     }
 
     bool isDeterministic() const override

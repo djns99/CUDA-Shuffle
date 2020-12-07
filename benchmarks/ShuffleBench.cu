@@ -1,6 +1,8 @@
 #include "CudaHelpers.h"
 #include "GatherShuffle.h"
 #include "ScatterShuffle.h"
+#include "ThrustInclude.h"
+#include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
@@ -15,7 +17,6 @@
 #include <benchmark/benchmark.h>
 #include <cmath>
 #include <sstream>
-#include <thrust/device_vector.h>
 #include <vector>
 
 using DataType = uint64_t;

@@ -52,29 +52,30 @@ public:
         return state.getValue( side_bits );
     }
 
+    constexpr static bool isDeterministic()
+    {
+        return true;
+    }
 private:
     __host__ __device__ uint64_t mulhi( uint64_t a, uint64_t b ) const
     {
 #ifdef __CUDA_ARCH__
         return __mul64hi( a, b );
 #else
-        uint64_t    a_lo = (uint32_t)a;
-        uint64_t    a_hi = a >> 32;
-        uint64_t    b_lo = (uint32_t)b;
-        uint64_t    b_hi = b >> 32;
+        uint64_t a_lo = (uint32_t)a;
+        uint64_t a_hi = a >> 32;
+        uint64_t b_lo = (uint32_t)b;
+        uint64_t b_hi = b >> 32;
 
-        uint64_t    a_x_b_hi =  a_hi * b_hi;
-        uint64_t    a_x_b_mid = a_hi * b_lo;
-        uint64_t    b_x_a_mid = b_hi * a_lo;
-        uint64_t    a_x_b_lo =  a_lo * b_lo;
+        uint64_t a_x_b_hi = a_hi * b_hi;
+        uint64_t a_x_b_mid = a_hi * b_lo;
+        uint64_t b_x_a_mid = b_hi * a_lo;
+        uint64_t a_x_b_lo = a_lo * b_lo;
 
-        uint64_t    carry_bit = ((uint64_t)(uint32_t)a_x_b_mid +
-                                 (uint64_t)(uint32_t)b_x_a_mid +
-                                 (a_x_b_lo >> 32) ) >> 32;
+        uint64_t carry_bit =
+            ( ( uint64_t )(uint32_t)a_x_b_mid + ( uint64_t )(uint32_t)b_x_a_mid + ( a_x_b_lo >> 32 ) ) >> 32;
 
-        uint64_t    multhi = a_x_b_hi +
-                             (a_x_b_mid >> 32) + (b_x_a_mid >> 32) +
-                             carry_bit;
+        uint64_t multhi = a_x_b_hi + ( a_x_b_mid >> 32 ) + ( b_x_a_mid >> 32 ) + carry_bit;
 
         return multhi;
 #endif
