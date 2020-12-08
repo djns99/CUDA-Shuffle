@@ -15,10 +15,6 @@ __global__ void initRandom( uint64_t words, uint64_t* data, GPURandomGenerator* 
     if( tid >= current_gens )
         new( generators + tid ) GPURandomGenerator( seed, tid );
     data[tid] = generators[tid]();
-    // Get more bits for better quality randomness
-#pragma unroll
-    for( uint64_t i = 0; i < 32; i++ )
-        data[tid] = WyHash::wyhash64_v3_pair( data[tid], generators[tid]() );
 }
 
 class ButterflyAllocator
@@ -118,9 +114,8 @@ private:
         if( m == 0 )
             return 0;
         // n = 2^m
-        // (n/2) * log (n/2) swaps
-        m--;
-        return ( 1ull << m ) * m;
+        // (n/2) * log (n) swaps
+        return ( 1ull << ( m - 1 ) ) * m;
     }
 
     static uint64_t getRandWords( uint64_t m )

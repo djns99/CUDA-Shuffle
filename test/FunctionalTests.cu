@@ -1,5 +1,7 @@
 #include "ConstantGenerator.h"
 #include "DefaultRandomGenerator.h"
+#include "shuffle/AndersonShuffle.h"
+#include "shuffle/ButterflyBijectiveShuffle.h"
 #include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
@@ -10,7 +12,6 @@
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
-#include "shuffle/ButterflyBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include "gtest/gtest.h"
@@ -77,6 +78,7 @@ using ShuffleTypes =
                      MergeShuffle<>,
                      FisherYatesShuffle<>,
                      RaoSandeliusShuffle<>,
+                     AndersonShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
                      LCGBijectiveScanShuffle<>,
@@ -108,8 +110,7 @@ using ShuffleTypes =
                      LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>
-        >;
+                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>>;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
 
 TYPED_TEST( FunctionalTests, SameLength )
