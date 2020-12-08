@@ -1,6 +1,8 @@
 #include "DefaultRandomGenerator.h"
 #include "nist-utils/cephes.h"
 #include "nist-utils/matrix.h"
+#include "shuffle/ButterflyBijectiveShuffle.h"
+#include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
@@ -9,7 +11,6 @@
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include "gtest/gtest.h"
-#include "shuffle/DartThrowing.h"
 #include <cmath>
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -39,7 +40,6 @@ protected:
         source_container = ContainerType( max_num_elements, 0 );
         shuffled_container = ContainerType( max_num_elements, 0 );
         thrust::sequence( source_container.begin(), source_container.end(), 0 );
-
     }
 
     void runShuffle()
@@ -93,5 +93,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, DartThrowing<>>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, ButterflyNetworkBijectiveScanShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
