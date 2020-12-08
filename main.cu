@@ -1,26 +1,48 @@
-#include <iomanip>
 #include <iostream>
-#include <numeric>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 
-#include "shuffle/FisherYatesShuffle.h"
+#include "ThrustInclude.h"
+#include "shuffle/ButterflyBijectiveShuffle.h"
 
+uint64_t fact( uint64_t n )
+{
+    uint64_t res = 1;
+    for( uint64_t i = 2; i <= n; i++)
+        res *= n;
+    return n;
+}
 
 int main( int argc, char** argv )
 {
-    FisherYatesShuffle<> shuffle;
+    ButterflyNetworkBijectiveScanShuffle<> shuffle;
     DefaultRandomGenerator gen;
-    for( int i = 0; i < 1; i++ )
+    const uint64_t count = 4;
+    std::unordered_map<std::string, uint64_t> map;
+    int iters = 1e6;
+    for( int i = 0; i < iters; i++ )
     {
-        std::vector<uint64_t> h_nums( 8 );
-        std::iota( h_nums.begin(), h_nums.end(), 0 );
-        shuffle( h_nums, h_nums, gen() );
+        thrust::device_vector<uint64_t> in_nums( count );
+        thrust::device_vector<uint64_t> out_nums( count );
+        thrust::sequence( in_nums.begin(), in_nums.end(), 0 );
+        shuffle( in_nums, out_nums, gen() );
 
-        std::cout << "{";
-        for( uint64_t num : h_nums )
-            std::cout << num * 8 << ", ";
-        std::cout << "}" << std::endl;
+        thrust::host_vector<uint64_t> host( out_nums.begin(), out_nums.end() );
+        std::stringstream ss;
+        for( uint64_t num : host )
+            ss << num << ", ";
+        map[ss.str()]++;
+
+        if( ( i % 10000 ) == 0 )
+            std::cout << i << std::endl;
     }
 
+    for( auto& pair : map )
+    {
+        std::cout << pair.first << " occurred " << pair.second << " (" << pair.second / (double)iters << ")" << std::endl;
+    }
+    std::cout << "Expected: " << iters / fact(count) << std::endl;
 
     return 0;
 }
