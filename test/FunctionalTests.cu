@@ -5,11 +5,11 @@
 #include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
-#include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
+#include "shuffle/PeriodicLCGShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
@@ -79,6 +79,7 @@ using ShuffleTypes =
                      FisherYatesShuffle<>,
                      RaoSandeliusShuffle<>,
                      AndersonShuffle<>,
+                     PeriodicLCGBijectiveShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,
                      LCGBijectiveScanShuffle<>,

@@ -22,7 +22,7 @@ __global__ void dartThrowing( uint64_t* bitmap, uint64_t num, uint64_t targets, 
     } while( ( tid = atomicExch( (unsigned long long*)bitmap + index, (unsigned long long)tid ) ) != 0 );
 }
 
-template <class ContainerType = thrust::device_vector<uint64_t>, uint64_t alpha_numerator = 2, uint64_t alpha_denom = 1>
+template <class ContainerType = thrust::device_vector<uint64_t>, uint64_t alpha_numerator = 4, uint64_t alpha_denom = 1>
 class DartThrowing : public Shuffle<ContainerType, GPURandomGenerator>
 {
 public:

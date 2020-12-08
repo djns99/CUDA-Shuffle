@@ -8,6 +8,7 @@ template <class ContainerType = std::vector<uint32_t>, class RandomGenerator = D
 class MergeShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:
+    // TODO Investigate why this & rao is broken
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
         if( &in_container != &out_container )
