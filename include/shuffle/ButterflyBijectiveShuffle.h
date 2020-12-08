@@ -4,6 +4,7 @@
 #include "BijectiveFunctionShuffle.h"
 #include "BijectiveFunctionSortShuffle.h"
 #include "ThrustInclude.h"
+#include "WyHash.h"
 #include <mutex>
 
 __global__ void initRandom( uint64_t words, uint64_t* data, GPURandomGenerator* generators, uint64_t current_gens, uint64_t seed )
@@ -14,6 +15,10 @@ __global__ void initRandom( uint64_t words, uint64_t* data, GPURandomGenerator* 
     if( tid >= current_gens )
         new( generators + tid ) GPURandomGenerator( seed, tid );
     data[tid] = generators[tid]();
+    // Get more bits for better quality randomness
+#pragma unroll
+    for( uint64_t i = 0; i < 32; i++ )
+        data[tid] = WyHash::wyhash64_v3_pair( data[tid], generators[tid]() );
 }
 
 class ButterflyAllocator
