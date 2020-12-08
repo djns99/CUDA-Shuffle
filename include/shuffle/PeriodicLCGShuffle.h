@@ -12,18 +12,25 @@ public:
     template <class RandomGenerator>
     void init( uint64_t capacity, RandomGenerator& random_function )
     {
-        m = capacity + 1;
+        m = capacity;
         if( m > MAX_CACHED_PRIME * 2 )
             throw std::invalid_argument( "Too large for LCG shuffle" );
 
         auto it = multiplier_map.find( m );
         if( it == multiplier_map.end() )
         {
-            uint64_t a = 1;
+            uint64_t temp_a = 1;
             for( auto prime : PRIME_CACHE )
-                if( ( m % prime ) == 0 )
-                    a *= prime;
-            it = multiplier_map.emplace( m, a % m ).first;
+            {
+                if( prime >= m )
+                    break;
+                else if( ( m % prime ) == 0 )
+                    temp_a *= prime;
+            }
+            if( temp_a == 1 ) // M is prime
+                temp_a = random_function() % (m - 1);
+            temp_a++;
+            it = multiplier_map.emplace( m, temp_a % m ).first;
         }
         a = it->second;
 
@@ -31,17 +38,19 @@ public:
         uint64_t found_c = 0;
         for( uint64_t i = 1; i < m; i++ )
         {
+            // Reservoir sampling to select
             if( coprime( i, m ) && ( random_function() % ++found_c ) == 0 )
                 c = i;
         }
+        assert( c != 0 );
 
         // Choose a random start in the sequence
-        x0 = random_function() % capacity + 1;
+        x0 = random_function() % m;
     }
 
     static uint64_t gcd( uint64_t a, uint64_t b )
     {
-        return a == 0 ? b : b == 0 ? a : gcd( a, b % a );
+        return a == 0 ? b : b == 0 ? a : gcd( b, a % b );
     }
 
     static uint64_t coprime( uint64_t c, uint64_t m )
@@ -76,11 +85,15 @@ public:
 
     __host__ __device__ uint64_t operator()( uint64_t val ) const
     {
-        val++;
+        assert( a != 0 );
+        assert( c != 0 );
         const uint64_t a_pow = powMod( a, val, m );
         const uint64_t mul = ( a_pow * x0 ) % m;
         const uint64_t add = ( ( ( a_pow - 1 ) * c ) / ( a - 1 ) ) % m;
-        return (( mul + add ) % m) - 1;
+        uint64_t res = ( ( mul + add ) % m );
+        printf( "%lu -> %lu ---- %lu * %lu + (%lu - 1)*%lu/(%lu - 1)\n", val, res, a_pow, x0, a_pow, c, a );
+        assert( res < m );
+        return res;
     }
 
     constexpr static bool isDeterministic()

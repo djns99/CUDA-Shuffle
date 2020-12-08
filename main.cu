@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "ThrustInclude.h"
-#include "shuffle/ButterflyBijectiveShuffle.h"
+#include "shuffle/PeriodicLCGShuffle.h"
 
 uint64_t fact( uint64_t n )
 {
@@ -16,7 +16,7 @@ uint64_t fact( uint64_t n )
 
 int main( int argc, char** argv )
 {
-    ButterflyNetworkBijectiveScanShuffle<> shuffle;
+    PeriodicLCGBijectiveShuffle<> shuffle;
     DefaultRandomGenerator gen;
     const uint64_t count = 4;
     std::unordered_map<std::string, uint64_t> map;
