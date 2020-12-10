@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
+// TODO Needs parameter specific tuning. Automation isnt working
 class PeriodicLCGBijection
 {
 public:
@@ -85,7 +86,7 @@ public:
 
     __host__ __device__ uint64_t operator()( uint64_t val ) const
     {
-        assert( a != 0 );
+        assert( a > 1 );
         assert( c != 0 );
         const uint64_t a_pow = powMod( a, val, m );
         const uint64_t mul = ( a_pow * x0 ) % m;

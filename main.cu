@@ -1,24 +1,34 @@
 #include <iostream>
+#include "shuffle/CzumajShuffle.h"
 #include <sstream>
 #include <string>
 #include <unordered_map>
 
-#include "ThrustInclude.h"
-#include "shuffle/PeriodicLCGShuffle.h"
+//#include "ThrustInclude.h"
 
 uint64_t fact( uint64_t n )
 {
     uint64_t res = 1;
-    for( uint64_t i = 2; i <= n; i++)
+    for( uint64_t i = 2; i <= n; i++ )
         res *= n;
     return n;
 }
 
+
 int main( int argc, char** argv )
 {
+    CzumajBijection b;
+    DefaultRandomGenerator g( 1 );
+    const uint64_t capacity = 100;
+    b.init(capacity, g);
+    for( uint64_t i = 0; i < capacity; i++)
+        std::cout << i << ":" << b( i ) << std::endl;
+
+
+    /*
     PeriodicLCGBijectiveShuffle<> shuffle;
     DefaultRandomGenerator gen;
-    const uint64_t count = 4;
+    const uint64_t count = 5;
     std::unordered_map<std::string, uint64_t> map;
     int iters = 1e6;
     for( int i = 0; i < iters; i++ )
@@ -45,4 +55,5 @@ int main( int argc, char** argv )
     std::cout << "Expected: " << iters / fact(count) << std::endl;
 
     return 0;
+     */
 }
