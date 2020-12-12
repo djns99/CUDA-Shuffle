@@ -3,6 +3,7 @@
 #include "ScatterShuffle.h"
 #include "ThrustInclude.h"
 #include "shuffle/DartThrowing.h"
+#include "shuffle/AndersonShuffle.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"

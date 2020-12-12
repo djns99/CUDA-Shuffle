@@ -3,6 +3,7 @@
 #include "nist-utils/matrix.h"
 #include "shuffle/AndersonShuffle.h"
 #include "shuffle/ButterflyBijectiveShuffle.h"
+#include "shuffle/CzumajShuffle.h"
 #include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
@@ -94,5 +95,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, AndersonShuffle<>, DartThrowing<>>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, CzumajBijectiveShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

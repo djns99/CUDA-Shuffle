@@ -35,16 +35,21 @@ private:
 #ifdef __CUDA_ARCH__
         return 64 - __clzll( n );
 #else
-        return 64 - __builtin_clzll( n );
+        return n == 0 ? 0 : 64 - __builtin_clzll( n );
 #endif
     }
 
     __host__ __device__ uint64_t randGen( uint64_t i, uint64_t j ) const
     {
         const uint64_t* const key_start = key + ( i % num_keys ) * key_size;
-        const uint64_t res1 = WyHash::wyhash64_v4_key2( key_start, i );
-        const uint64_t res2 = WyHash::wyhash64_v4_key2( key_start + 2, j );
-        return WyHash::wyhash64_v4_key2( key_start + 4, res1 ^ res2 );
+        assert( key_start < key + num_keys * key_size );
+
+        for( uint64_t round = 2; round < key_size; round += 4)
+        {
+            i = WyHash::wyhash64_v4_key2( key_start + round, i );
+            j = WyHash::wyhash64_v4_key2( key_start + round + 2, j );
+        }
+        return WyHash::wyhash64_v4_key2( key_start, i ^ j );
     }
 
     __host__ __device__ double rejectRand( uint64_t i, uint64_t j ) const
@@ -64,71 +69,41 @@ private:
         return *(double*)&val;
     }
 
-    static __host__ __device__ double intPow( double a, int64_t k )
-    {
-        if( k < 0 )
-            return intPow( 1.0 / a, -k );
 
-        // Fast modular exponentiation
-        if( k == 0 )
-            return 1;
-        double res = 1;
-        while( k > 1 )
-        {
-            if( k & 1 )
-            {
-                res *= a;
-            }
-            a *= a;
-            k >>= 1;
-        }
-        return a * res;
-    }
-
-    __host__ __device__ uint64_t distCalc( uint64_t a, uint64_t n, uint64_t p, uint64_t k ) const
+    static __host__ __device__ double distCalc( uint64_t a, uint64_t n, uint64_t p, uint64_t k )
     {
-        // nCk(a, k) * nCk(n-a, p-k) / nCk(n, p)
-        // Approximate via nCk(n,k) = n^k/k!
-        const uint64_t n_k = n - k;
+        // nCr(a, k) * nCr(n-a, p-k) / nCr(n, p)
+        const uint64_t a_k = a - k;
         const uint64_t p_k = p - k;
         const uint64_t n_a = n - a;
         const uint64_t n_p = n - p;
-        const uint64_t n_a_p_k = n - a - p_k;
+        const uint64_t n_a_p_k = n_a - p_k;
 
-        uint64_t top_terms = 4;
-        uint64_t bottom_terms = 5;
-
-        double result = 1.0;
-        // TODO Memoize
-        // Calculate the result in one pass of O(n)
+        double res = 1.0;
         for( uint64_t val = 2; val <= n; val++ )
         {
-            if( val > 1 )
-            {
-                int64_t pow_raise = (int64_t)top_terms - (int64_t)bottom_terms;
-                result *= intPow( val, pow_raise );
-            }
+            const auto d_val = (double)val;
 
-            if( val == a )
-                top_terms--;
-            if( val == p )
-                top_terms--;
-            if( val == n_a )
-                top_terms--;
-            if( val == n_p )
-                top_terms--;
+            // nCr(a, k)
+            if( val <= k )
+                res /= d_val;
+            if( val > a_k && val <= a )
+                res *= d_val;
 
-            if( val == k )
-                bottom_terms--;
-            if( val == n_k )
-                bottom_terms--;
-            if( val == p_k )
-                bottom_terms--;
-            if( val == n_a_p_k )
-                bottom_terms--;
+            // nCr(n-a, p-k)
+            if( val <= p_k )
+                res /= d_val;
+            if( val > n_a_p_k && val <= n_a )
+                res *= d_val;
+
+            // nCr(n, p)
+            if( val <= p )
+                res *= d_val;
+            if( val > n_p && val <= n )
+                res /= d_val;
         }
 
-        return result;
+        return res;
     }
 
     __host__ __device__ uint64_t repartitorReject( uint64_t n, uint64_t p, uint64_t i ) const
@@ -138,22 +113,21 @@ private:
         const double alpha = a / (double)n;
         const double u = p * alpha;
         const double v = 2 * alpha * ( 1 - alpha ) * p;
-        const double pow_part = pow( 2, ( 1 - 2 * alpha ) * n ) / pow( 2 * alpha, p );
+        const double pow_part = (double)pow( 2.0, ( 1 - 2.0 * alpha ) * n ) / (double)pow( 2.0 * alpha, p );
         const double M = 1.2 * sqrt( v / PI ) * pow_part * sqrt( 1 + p / (double)( n - p ) );
 
-        for( uint64_t l = 0; true; l++ )
+        for( uint64_t l = 1; true; l++ )
         {
             const double rand_1 = rejectRand( i, 2 * l - 1 );
-            const double rand_2 = rejectRand( i, 2 * l );
             const double x = sqrt( v ) * tan( PI * rand_1 );
-            if( abs( x ) < u )
-                continue;
-            const uint64_t k = x + u + 0.5;
-            if( k > p )
+            const double k = floor( x + u + 0.5 );
+            if( k < 0 || k > p )
                 continue;
 
-            const uint64_t H = distCalc( a, n, p, k );
-            if( rand_2 < ( ( ( x * x + v ) * H ) / M ) )
+            const double H = distCalc( a, n, p, k );
+            const double rand_2 = rejectRand( i, 2 * l );
+            const double comp = ( x * x + v ) * ( H / M );
+            if( rand_2 <= comp )
                 return k;
         }
     }
@@ -162,25 +136,37 @@ private:
     __host__ __device__ uint64_t repartitor( uint64_t n, uint64_t p, uint64_t i ) const
     {
         const uint64_t a = n / 2;
-        if( p > a )
-            return a - repartitor( n, n - p, i );
-        if( p > 10 )
-            return repartitorReject( n, p, i );
-        uint64_t n1 = a;
-        uint64_t n2 = n - a;
-        for( uint64_t j = 0; p > 0; p--, j++ )
+        bool switch_p = p > a;
+        if( switch_p )
+            p = n - p;
+        uint64_t res;
+        if( p <= 10 )
         {
-            const uint64_t r = randGen( i, j ) % ( n1 + n2 );
-            if( r < n1 )
-                n1--;
-            else
-                n2--;
+            uint64_t n1 = a;
+            uint64_t n2 = n - a;
+            for( uint64_t j = 0; p > 0; p--, j++ )
+            {
+                const uint64_t r = randGen( i, j ) % ( n1 + n2 );
+                if( r < n1 )
+                    n1--;
+                else
+                    n2--;
+            }
+            res = a - n1;
         }
-        return a - n1;
+        else
+        {
+            res = repartitorReject( n, p, i );
+        }
+
+        if( switch_p )
+            return a - res;
+        return res;
     }
 
-    __host__ __device__ uint64_t splitter( uint64_t n, uint64_t p, uint64_t x, uint64_t i ) const
+    /*__host__ __device__ uint64_t splitter_r( uint64_t n, uint64_t p, uint64_t x, uint64_t i ) const
     {
+        assert( n <= num_elements );
         if( n == 1 )
             return x;
         const uint64_t a = n / 2;
@@ -201,7 +187,68 @@ private:
             else
                 return t + a;
         }
+
+        // Should never get here
+        assert( false );
+    }*/
+
+    __host__ __device__ uint64_t splitter( uint64_t n, uint64_t p, uint64_t x, uint64_t i ) const
+    {
+        constexpr uint64_t max_bits = 40;
+        assert( n >= 1 );
+        assert( n < ( 1ull << max_bits ) );
+
+        uint64_t p_stack[max_bits];
+        uint64_t u_stack[max_bits];
+        uint64_t a_stack[max_bits];
+        bool dir_stack[max_bits];
+
+        int64_t depth;
+        for( depth = 0; n != 1; depth++ )
+        {
+            const uint64_t a = n / 2;
+            const uint64_t u = repartitor( n, p, i );
+            a_stack[depth] = a;
+            u_stack[depth] = u;
+            p_stack[depth] = p;
+            dir_stack[depth] = x < a;
+            if( x < a )
+            {
+                n = a;
+                p = u;
+                x = x;
+                i++;
+            }
+            else
+            {
+                n -= a;
+                p -= u;
+                x -= a;
+                i += a;
+            }
+        }
+
+        uint64_t t = x;
+        for( depth--; depth >= 0; depth-- )
+        {
+            if( dir_stack[depth] )
+            {
+                if( t < u_stack[depth] )
+                    t = t;
+                else
+                    t = p_stack[depth] + ( t - u_stack[depth] );
+            }
+            else
+            {
+                if( t < ( p_stack[depth] - u_stack[depth] ) )
+                    t += u_stack[depth];
+                else
+                    t += a_stack[depth];
+            }
+        }
+        return t;
     }
+
 
     static __host__ __device__ uint64_t gamma( uint64_t n )
     {
@@ -211,17 +258,32 @@ private:
 
     __host__ __device__ uint64_t permutator( uint64_t n, uint64_t x, uint64_t i ) const
     {
-        if( n == 1 )
-            return x;
-        const uint64_t a = n / 2;
-        const uint64_t t = splitter( n, a, x, i );
-        if( t < a )
-            return permutator( a, t, i + n - 1 );
-        else
-            return a + permutator( n - a, t - a, i + n - 1 + gamma( a ) );
+        assert( n >= 1 );
+        uint64_t sum = 0;
+        for( uint64_t depth = 0; n != 1; depth++ )
+        {
+            uint64_t a = n / 2;
+            const uint64_t t = splitter( n, a, x, i );
+            if( t < a )
+            {
+                i = i + n - 1;
+                n = a;
+                x = t;
+            }
+            else
+            {
+                sum += a;
+                i = i + n - 1 + gamma( a );
+                n = n - a;
+                x = t - a;
+            }
+        }
+
+        assert( ( sum + x ) < num_elements );
+        return sum + x;
     }
 
-    constexpr static uint64_t key_size = 6;
+    constexpr static uint64_t key_size = 14;
     constexpr static uint64_t num_keys = 16;
     uint64_t key[key_size * num_keys];
     uint64_t num_elements;

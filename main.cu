@@ -1,5 +1,5 @@
-#include <iostream>
 #include "shuffle/CzumajShuffle.h"
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -14,16 +14,21 @@ uint64_t fact( uint64_t n )
     return n;
 }
 
-
 int main( int argc, char** argv )
 {
-    CzumajBijection b;
-    DefaultRandomGenerator g( 1 );
-    const uint64_t capacity = 100;
-    b.init(capacity, g);
-    for( uint64_t i = 0; i < capacity; i++)
-        std::cout << i << ":" << b( i ) << std::endl;
+        CzumajBijection b;
+        DefaultRandomGenerator g( 1 );
+        const uint64_t capacity = 22;
+        b.init( capacity, g );
+        for( uint64_t i = 0; i < 22; i++ )
+            std::cout << i << ":" << b( i ) << std::endl;
 
+        thrust::device_vector<uint64_t> out_nums( capacity );
+        thrust::transform( thrust::counting_iterator<uint64_t>( 0 ),
+                           thrust::counting_iterator<uint64_t>( capacity ), out_nums.begin(), b );
+        thrust::host_vector<uint64_t> host( out_nums.begin(), out_nums.end() );
+        for( uint64_t i = 0; i < capacity; i++ )
+            std::cout << i << ":" << host[i] << std::endl;
 
     /*
     PeriodicLCGBijectiveShuffle<> shuffle;
