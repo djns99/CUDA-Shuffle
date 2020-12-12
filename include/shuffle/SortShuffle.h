@@ -21,7 +21,7 @@ __global__ void fisherYatesIdenticalKey( uint64_t* keys, ValueType* values, uint
     uint64_t key[2] = { key1, key2 };
     GPURand rng( WyHash::wyhash64_v4_key2( key, tid ) );
     uint64_t i;
-    for( i = 0; i < num && keys[tid + i] == me; i++ )
+    for( i = tid; i < num && keys[i] == me; i++ )
         ;
 
     for( ; tid < i - 1; tid++ )

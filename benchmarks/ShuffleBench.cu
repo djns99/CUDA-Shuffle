@@ -35,17 +35,15 @@ static void benchmarkScatterGather( benchmark::State& state )
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
 
-    using HostVector = typename std::vector<typename ContainerType::value_type>;
-    HostVector tmp( in_container.size() );
-    StdShuffle<HostVector> temp_shuffler;
-    thrust::sequence( tmp.begin(), tmp.end() );
+    // Use bijective shuffle since it is fastest and still strongly random
+    FeistelBijectiveShuffle<ContainerType> temp_shuffler;
+    thrust::sequence( out_container.begin(), out_container.end() );
 
     int seed = 0;
     for( auto _ : state )
     {
         state.PauseTiming();
-        temp_shuffler( tmp, tmp, seed );
-        thrust::copy( tmp.begin(), tmp.end(), in_container.begin() );
+        temp_shuffler( out_container, in_container, seed );
         checkCudaError( cudaDeviceSynchronize() );
         state.ResumeTiming();
         // Benchmarks raw gather speed of a random permutation
@@ -111,6 +109,8 @@ BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<DataTyp
 // BENCHMARK_TEMPLATE( benchmarkFunction,
 // FeistelBijectiveSortShuffle<thrust::device_vector<DataType>> )
 //    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<thrust::device_vector<DataType>, 5, 1> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, AndersonShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveScanShuffle<thrust::device_vector<DataType>> )
     ->Apply( argsGenerator );
 // BENCHMARK_TEMPLATE( benchmarkFunction,
