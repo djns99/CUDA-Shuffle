@@ -164,34 +164,6 @@ private:
         return res;
     }
 
-    /*__host__ __device__ uint64_t splitter_r( uint64_t n, uint64_t p, uint64_t x, uint64_t i ) const
-    {
-        assert( n <= num_elements );
-        if( n == 1 )
-            return x;
-        const uint64_t a = n / 2;
-        const uint64_t u = repartitor( n, p, i );
-        if( x < a )
-        {
-            const uint64_t t = splitter( a, u, x, i + 1 );
-            if( t < u )
-                return t;
-            else
-                return p + ( t - u );
-        }
-        else
-        {
-            const uint64_t t = splitter( n - a, p - u, x - a, i + a );
-            if( t < ( p - u ) )
-                return t + u;
-            else
-                return t + a;
-        }
-
-        // Should never get here
-        assert( false );
-    }*/
-
     __host__ __device__ uint64_t splitter( uint64_t n, uint64_t p, uint64_t x, uint64_t i ) const
     {
         constexpr uint64_t max_bits = 40;
