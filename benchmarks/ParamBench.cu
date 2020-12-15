@@ -10,7 +10,7 @@ using DataType = uint64_t;
 
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
 
 
 template <class ShuffleFunction>
@@ -25,6 +25,7 @@ static void benchmarkFunction( benchmark::State& state )
 
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
+    thrust::sequence( in_container.begin(), in_container.end(), 0 );
 
     int seed = 0;
     for( auto _ : state )
@@ -47,7 +48,7 @@ static void benchmarkFunction( benchmark::State& state )
 
 static void argsGenerator( benchmark::internal::Benchmark* b )
 {
-    b->Ranges( { { 1 << 24, 1 << 24 }, { 0, 1 } } );
+    b->Ranges( { { 1 << 24, 1 << 24 }, { 1, 1 } } );
 }
 
 BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<1> )->Apply( argsGenerator );
@@ -82,3 +83,7 @@ BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<29> )->A
 BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<30> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<31> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<32> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<64> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<128> )->Apply( argsGenerator );
+
+BENCHMARK_MAIN();
