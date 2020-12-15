@@ -97,7 +97,7 @@ static void benchmarkFunction( benchmark::State& state )
 
 static void argsGenerator( benchmark::internal::Benchmark* b )
 {
-    b->Ranges( { { 1 << 8, 1 << 29 }, { 0, 1 } } );
+    b->Ranges( { { 1 << 8, 1 << 21 }, { 0, 1 } } );
 }
 
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );

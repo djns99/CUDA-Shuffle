@@ -38,6 +38,7 @@ public:
     {
         return 1ull << ( left_side_bits + right_side_bits );
     }
+
     __host__ __device__ uint64_t operator()( const uint64_t val ) const
     {
         // Extract the right and left sides of the input

@@ -6,3 +6,4 @@ function( setup_benchmark name )
 endfunction()
 
 setup_benchmark(ShuffleBench)
+setup_benchmark(ParamBench)
