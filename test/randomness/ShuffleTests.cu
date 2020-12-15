@@ -82,7 +82,7 @@ TYPED_TEST( RandomnessTests, EvenSpacingBetweenOccurances )
         }
     }
 
-    const double expected_occurances = num_samples / ( shuffle_size - 1 );
+    const double expected_occurances = num_samples / (double)( shuffle_size - 1 );
     for( uint64_t val_1 = 0; val_1 < shuffle_size; val_1++ )
     {
         for( uint64_t val_2 = val_1 + 1; val_2 < shuffle_size; val_2++ )

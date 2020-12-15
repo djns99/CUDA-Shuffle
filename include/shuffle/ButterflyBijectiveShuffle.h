@@ -199,7 +199,7 @@ private:
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class ButterflyNetworkBijectiveScanShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
-    cached_allocator alloc;
+    cached_allocator<true> alloc;
 
     // thrust::device_vector<KeyFlagTuple> result;
 

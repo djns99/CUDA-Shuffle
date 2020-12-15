@@ -40,7 +40,7 @@ double cephes_igamc( double a, double x )
 
     if( ax < -MAXLOG )
     {
-        printf( "igamc: UNDERFLOW\n" );
+        fprintf( stderr, "igamc: UNDERFLOW\n" );
         return 0.0;
     }
     ax = exp( ax );
@@ -101,7 +101,7 @@ double cephes_igam( double a, double x )
     ax = a * log( x ) - x - cephes_lgam( a );
     if( ax < -MAXLOG )
     {
-        printf( "igam: UNDERFLOW\n" );
+        fprintf( stderr, "igam: UNDERFLOW\n" );
         return 0.0;
     }
     ax = exp( ax );
@@ -215,7 +215,7 @@ double cephes_lgam( double x )
     if( x > MAXLGM )
     {
     loverf:
-        printf( "lgam: OVERFLOW\n" );
+        fprintf( stderr, "lgam: OVERFLOW\n" );
 
         return sgngam * MAXNUM;
     }
