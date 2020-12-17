@@ -143,4 +143,8 @@ public:
         mergeShuffle( out_container.data(), num, g );
     }
 
+    bool isDeterministic() const override
+    {
+        return false;
+    }
 };
