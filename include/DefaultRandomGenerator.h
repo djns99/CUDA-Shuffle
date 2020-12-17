@@ -21,6 +21,8 @@ public:
     {
     }
 
+    DefaultRandomGenerator( DefaultRandomGenerator&& ) = default;
+
     uint64_t operator()()
     {
         return random_function();
