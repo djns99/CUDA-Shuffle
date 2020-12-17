@@ -107,55 +107,58 @@ void reportStats( std::vector<double>& scores )
 TYPED_TEST( ParameterQualityTests, FullPermutation )
 {
     const uint64_t num_loops = 50;
-    std::vector<double> p_scores( num_loops, 0.0 );
-    std::vector<std::thread> threads;
-    uint64_t count = 6;
-    std::mutex lock;
-    std::condition_variable cv;
-    for( uint64_t j = 0; j < num_loops; j++ )
+    std::vector<double> p_scores;
+    for( uint64_t i = 0; i < num_loops; i++ )
     {
-        threads.emplace_back( [&, j, this] {
-            auto local_shuffle = this->shuffle;
-            const uint64_t shuffle_size = 6;
-            const uint64_t num_samples = 1e6;
-            thrust::host_vector<uint64_t> input( shuffle_size );
-            thrust::host_vector<uint64_t> output( shuffle_size );
+        const uint64_t shuffle_size = 6;
+        const uint64_t num_samples = 1e6;
 
-            std::unordered_map<uint64_t, uint64_t> results;
-            for( uint64_t i = 0; i < num_samples; i++ )
-            {
-                thrust::sequence( input.begin(), input.end(), 0 );
-                local_shuffle( input, output, i + j * num_samples, shuffle_size );
-                results[permutationToIndex( output, shuffle_size )]++;
-            }
+        const uint64_t num_threads = 6;
+        const uint64_t samples_per_thread = ( num_samples + ( num_threads - 1 ) ) / num_threads;
 
-            const uint64_t size_fact = factorial( shuffle_size );
-            const double expected_occurances = num_samples / (double)size_fact;
+        std::vector<std::unordered_map<uint64_t, uint64_t>> results_map( num_threads );
+        std::vector<std::thread> threads;
+        for( uint64_t tid = 0; tid < num_threads; tid++ )
+        {
+            threads.emplace_back( [&, tid]() {
+                auto local_shuffle = this->shuffle;
+                thrust::host_vector<uint64_t> input( shuffle_size );
+                thrust::host_vector<uint64_t> output( shuffle_size );
 
-            auto& permutations = allPermutations( shuffle_size );
-            double chi_squared = 0.0;
-            for( uint64_t i = 0; i < size_fact; i++ )
-            {
-                chi_squared += pow( results[permutations[i]] - expected_occurances, 2 ) / expected_occurances;
-            }
+                for( uint64_t i = tid * samples_per_thread;
+                     i < std::min( num_samples, samples_per_thread * ( tid + 1 ) ); i++ )
+                {
+                    thrust::sequence( input.begin(), input.end(), 0 );
+                    local_shuffle( input, output, i, shuffle_size );
+                    results_map[tid][permutationToIndex( output, shuffle_size )]++;
+                }
+            } );
+        }
 
-            double p_score = cephes_igamc( (double)( size_fact - 1 ) / 2.0, chi_squared / 2.0 );
-            std::cout << p_score << ',' << std::flush;
+        std::unordered_map<uint64_t, uint64_t> results;
+        for( auto& thread : threads )
+            thread.join();
 
-            p_scores[j] = p_score;
+        for( auto& res : results_map )
+            for( auto& pair : res )
+                results[pair.first] += pair.second;
 
-            std::lock_guard<std::mutex> g( lock );
-            count++;
-            cv.notify_one();
-        } );
+        const uint64_t size_fact = factorial( shuffle_size );
+        const double expected_occurances = num_samples / (double)size_fact;
 
-        std::unique_lock<std::mutex> g( lock );
-        cv.wait( g, [&]() { return count > 0; } );
-        count--;
+        auto& permutations = allPermutations( shuffle_size );
+        double chi_squared = 0.0;
+        for( uint64_t i = 0; i < size_fact; i++ )
+        {
+            chi_squared += pow( results[permutations[i]] - expected_occurances, 2 ) / expected_occurances;
+        }
+
+        double p_score = cephes_igamc( (double)( size_fact - 1 ) / 2.0, chi_squared / 2.0 );
+        std::cout << p_score << ',' << std::flush;
+
+        p_scores.emplace_back(p_score);
     }
 
-    for( auto& thread : threads )
-        thread.join();
     std::cout << std::endl;
     reportStats( p_scores );
 }

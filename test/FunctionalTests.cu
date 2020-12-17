@@ -14,6 +14,7 @@
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
+#include "shuffle/ThrustShuffle.h"
 #include "gtest/gtest.h"
 #include <cstdint>
 #include <numeric>
@@ -79,6 +80,7 @@ using ShuffleTypes =
                      FisherYatesShuffle<>,
                      RaoSandeliusShuffle<>,
                      AndersonShuffle<>,
+                     ThrustShuffle<>,
                      CzumajBijectiveShuffle<>,
                      LCGBijectiveShuffle<>,
                      LCGBijectiveSortShuffle<>,

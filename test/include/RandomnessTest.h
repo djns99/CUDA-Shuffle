@@ -12,6 +12,7 @@
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/StdShuffle.h"
+#include "shuffle/ThrustShuffle.h"
 #include "gtest/gtest.h"
 #include <cmath>
 #ifdef _MSC_VER
@@ -95,5 +96,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, CzumajBijectiveShuffle<>>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<>>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

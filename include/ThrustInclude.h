@@ -1,6 +1,5 @@
 #pragma once
 
-#define THRUST_IGNORE_CUB_VERSION_CHECK
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
@@ -14,3 +13,4 @@
 #include <thrust/transform.h>
 #include <thrust/gather.h>
 #include <thrust/iterator/transform_output_iterator.h>
+#include <thrust/shuffle.h>
