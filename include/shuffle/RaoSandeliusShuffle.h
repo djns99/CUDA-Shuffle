@@ -40,28 +40,29 @@ private:
             std::shuffle( begin, end, g );
             return;
         }
-        Iterator original_start = begin;
-        Iterator original_end = end;
+        Iterator i = begin;
+        Iterator j = end;
         Flipper flip( g );
-        while( begin != end )
+        while( i != j )
         {
             if( flip() )
-                std::swap( *begin, *( end-- ) );
+                std::swap( *i, *( j-- ) );
             else
-                begin++;
+                i++;
         }
-        if( original_end - original_start < cutoff2 )
+
+        if( end - begin < cutoff2 )
         {
-            raoSandeliusShuffle( original_start, begin, g );
-            raoSandeliusShuffle( begin, original_end, g );
+            raoSandeliusShuffle( begin, i, g );
+            raoSandeliusShuffle( i, end, g );
         }
         else
         {
             RandomGenerator local_g( g );
             std::thread t( [=, &local_g]() {
-                raoSandeliusShuffle( original_start, begin, local_g );
+                raoSandeliusShuffle( begin, i, local_g );
             } );
-            raoSandeliusShuffle( begin, original_end, g );
+            raoSandeliusShuffle( i, end, g );
             t.join();
         }
     }
@@ -74,7 +75,8 @@ public:
             // Copy if we are not doing an inplace operation
             std::copy( in_container.begin(), in_container.begin() + num, out_container.begin() );
         }
+
         RandomGenerator g( seed );
-        raoSandeliusShuffle( out_container.begin(), out_container.end(), g );
+        raoSandeliusShuffle( out_container.begin(), out_container.begin() + num, g );
     }
 };
