@@ -2,13 +2,135 @@
 #include "DefaultRandomGenerator.h"
 #include "mergeshuffle/MergeShuffle.h"
 #include "shuffle/Shuffle.h"
+#include <algorithm>
+#include <thread>
 #include <vector>
 
-template <class ContainerType = std::vector<uint32_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class ContainerType = std::vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class MergeShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
+private:
+    static constexpr unsigned long cutoff = 0x10000;
+    std::vector<DefaultRandomGenerator> generators;
+
+    struct Flipper
+    {
+        Flipper( RandomGenerator& generator ) : g( generator )
+        {
+        }
+        RandomGenerator& g;
+        uint64_t current = 0;
+        uint64_t index = 0;
+        bool operator()()
+        {
+            if( index == 0 )
+                current = g();
+            bool res = ( current >> index ) & 1;
+            index = ( index + 1 ) % 64;
+            return res;
+        }
+    };
+
+    static inline unsigned long randomInt( Flipper flip, unsigned long n )
+    {
+        unsigned long v = 1;
+        unsigned long d = 0;
+        while( true )
+        {
+            d += d + flip();
+            v += v;
+
+            if( v >= n )
+            {
+                if( d < n )
+                    return d;
+                v -= n;
+                d -= n;
+            }
+        }
+    }
+
+    template <class T>
+    void merge( T* start, uint64_t mid_idx, uint64_t end_idx, RandomGenerator& g )
+    {
+        T* const original_start = start;
+        T* mid = start + mid_idx;
+        T* end = start + end_idx;
+        Flipper flip( g );
+        while( true )
+        {
+            if( flip() )
+            {
+                if( start == mid )
+                    break;
+            }
+            else
+            {
+                if( mid == end )
+                    break;
+                std::swap( *start, *mid );
+                mid++;
+            }
+            start++;
+        }
+
+        while( start != end )
+        {
+            const uint64_t num_processed = start - original_start;
+            const uint64_t index = randomInt( flip, num_processed );
+            std::swap( *(original_start + index), *start );
+            start++;
+        }
+    }
+
+    template <class T>
+    void mergeShuffle( T* t, uint64_t n, RandomGenerator& g )
+    {
+        // Calculate the number of divisions to reach the cutoff
+        unsigned int c = 0;
+        while( ( n >> c ) > cutoff )
+            c++;
+        unsigned int q = 1 << c;
+        unsigned long nn = n;
+
+        if( generators.capacity() < q )
+            generators.reserve( q );
+        while( generators.size() < q )
+            generators.emplace_back( g() );
+
+        std::vector<std::thread> threads;
+        // Launch thread for local fisher yates
+        for( unsigned int i = 0; i < q; i++ )
+        {
+            threads.emplace_back( [=]() {
+                unsigned long j = nn * i >> c;
+                unsigned long k = nn * ( i + 1 ) >> c;
+                std::shuffle( t + j, t + k, generators[i] );
+            } );
+        }
+
+        for( auto& thread : threads )
+            thread.join();
+
+        threads.clear();
+        for( unsigned int p = 1; p < q; p += p )
+        {
+            for( unsigned int i = 0; i < q; i += 2 * p )
+            {
+                threads.emplace_back( [=]() {
+                    unsigned long j = nn * i >> c;
+                    unsigned long k = nn * ( i + p ) >> c;
+                    unsigned long l = nn * ( i + 2 * p ) >> c;
+                    merge( t + j, k - j, l - j, generators[i] );
+                } );
+            }
+            for( auto& thread : threads )
+                thread.join();
+            threads.clear();
+        }
+    }
+
 public:
-    // TODO Investigate why this & rao is broken
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
         if( &in_container != &out_container )
@@ -18,13 +140,7 @@ public:
         }
 
         RandomGenerator g( seed );
-        setMergeShuffleRand64( [&g]() { return g(); } );
-        parallel_merge_shuffle( out_container.data(), num );
-        setMergeShuffleRand64( {} );
+        mergeShuffle( out_container.data(), num, g );
     }
 
-    bool isDeterministic() const override
-    {
-        return false;
-    }
 };
