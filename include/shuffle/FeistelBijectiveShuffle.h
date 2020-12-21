@@ -1,11 +1,11 @@
 #pragma once
-#include "WyHash.h"
 #include "shuffle/BijectiveFunctionCompressor.h"
 #include "shuffle/BijectiveFunctionScanShuffle.h"
 #include "shuffle/BijectiveFunctionShuffle.h"
 #include "shuffle/BijectiveFunctionSortShuffle.h"
+#include "shuffle/FeistelRoundFunctions.h"
 
-template <uint64_t num_rounds>
+template <uint64_t num_rounds, class RoundFunction = WyHashRoundFunction<num_rounds>>
 class FeistelBijectiveFunction
 {
 private:
@@ -27,11 +27,7 @@ public:
         right_side_bits = total_bits - left_side_bits;
         right_side_mask = ( 1ull << right_side_bits ) - 1;
 
-        for( uint64_t i = 0; i < num_rounds; i++ )
-        {
-            key[i][0] = random_function();
-            key[i][1] = random_function();
-        }
+        round_function.init( random_function, right_side_bits, left_side_bits );
     }
 
     uint64_t getMappingRange() const
@@ -79,13 +75,13 @@ private:
         return i;
     }
 
-    __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key[2] ) const
+    __host__ __device__ uint32_t applyRoundFunction( uint64_t value, uint64_t round ) const
     {
         // Hash so value affects more than just the lower bits of the key
-        return WyHash::wyhash64_v4_key2( key, value ) & left_side_mask;
+        return round_function( value, round ) & left_side_mask;
     }
 
-    // __host__ __device__ uint32_t applyKey( uint64_t value, const uint64_t key ) const
+    // __host__ __device__ uint32_t applyRoundFunction( uint64_t value, const uint64_t key ) const
     // {
     //     // Hash so value affects more than just the lower bits of the key
     //     return WyHash::wyhash64_v3_pair( key, value ) & left_side_mask;
@@ -94,7 +90,7 @@ private:
     __host__ __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
         const uint32_t new_left = state.right & left_side_mask;
-        const uint32_t round_function_res = state.left ^ applyKey( state.right, key[round] );
+        const uint32_t round_function_res = state.left ^ applyRoundFunction( state.right, round );
         if( right_side_bits != left_side_bits )
         {
             // Upper bit of the old right becomes lower bit of new right if we have odd length feistel
@@ -108,7 +104,7 @@ private:
     uint64_t left_side_bits;
     uint64_t right_side_mask;
     uint64_t left_side_mask;
-    uint64_t key[num_rounds][2];
+    RoundFunction round_function;
 };
 
 static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 8;

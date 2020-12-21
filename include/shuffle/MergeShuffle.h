@@ -78,7 +78,7 @@ private:
         {
             const uint64_t num_processed = start - original_start;
             const uint64_t index = randomInt( flip, num_processed );
-            std::swap( *(original_start + index), *start );
+            std::swap( *( original_start + index ), *start );
             start++;
         }
     }
@@ -102,11 +102,18 @@ private:
         // Launch thread for local fisher yates
         for( unsigned int i = 0; i < q; i++ )
         {
-            threads.emplace_back( [=]() {
+            auto func = [=]() {
                 unsigned long j = nn * i >> c;
-                unsigned long k = nn * ( i + 1 ) >> c;
-                std::shuffle( t + j, t + k, generators[i] );
-            } );
+                unsigned long k = std::min( nn * ( i + 1 ) >> c, nn );
+                assert( j < nn );
+                assert( k < nn );
+                std::shuffle( t + j, t + k, this->generators[i] );
+            };
+
+            if( i < q - 1 )
+                threads.emplace_back( func );
+            else
+                func();
         }
 
         for( auto& thread : threads )
@@ -117,12 +124,20 @@ private:
         {
             for( unsigned int i = 0; i < q; i += 2 * p )
             {
-                threads.emplace_back( [=]() {
+                auto func = [=]() {
                     unsigned long j = nn * i >> c;
                     unsigned long k = nn * ( i + p ) >> c;
-                    unsigned long l = nn * ( i + 2 * p ) >> c;
-                    merge( t + j, k - j, l - j, generators[i] );
-                } );
+                    unsigned long l = std::min( nn * ( i + 2 * p ) >> c, nn );
+                    assert( j < nn );
+                    assert( k < nn );
+                    assert( l < nn );
+                    merge( t + j, k - j, l - j, this->generators[i] );
+                };
+
+                if( ( i + 2 * p ) < q )
+                    threads.emplace_back( func );
+                else
+                    func();
             }
             for( auto& thread : threads )
                 thread.join();
