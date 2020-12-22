@@ -4,6 +4,3 @@
 [submodule "vendor/google/benchmark"]
 	path = vendor/google/benchmark
 	url = https://github.com/google/benchmark.git
-[submodule "vendor/nvidia/thrust"]
-	path = vendor/nvidia/thrust
-	url = https://github.com/NVIDIA/thrust.git
