@@ -53,16 +53,16 @@ using ParamRoundFeistelBijectiveScanShuffle =
 //                                                      ParamFeistelBijectiveScanShuffle<32>>;
 
 constexpr uint64_t target_num_rounds = 16;
-using ParameterQualityShuffleTypes =
-    ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, LCGRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux24RoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux48RoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>>;
+using ParameterQualityShuffleTypes = ::testing::Types<
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, LCGRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux24RoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux48RoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
+    StdShuffle<thrust::host_vector<uint64_t>>>;
 
 TYPED_TEST_SUITE( ParameterQualityTests, ParameterQualityShuffleTypes );
 
@@ -124,6 +124,7 @@ void reportStats( std::vector<double>& scores )
 TYPED_TEST( ParameterQualityTests, FullPermutation )
 {
     const uint64_t num_loops = 50;
+    const uint64_t seed_start = 0xdeadbeef;
     std::vector<double> p_scores;
     for( uint64_t loop = 0; loop < num_loops; loop++ )
     {
@@ -146,8 +147,9 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
                      i < std::min( num_samples, samples_per_thread * ( tid + 1 ) ); i++ )
                 {
                     thrust::sequence( input.begin(), input.end(), 0 );
-                    local_shuffle( input, output, loop * num_samples + i, shuffle_size );
-                    results_map[tid][permutationToIndex( output, shuffle_size )]++;
+                    local_shuffle( input, output, seed_start + loop * num_samples + i, shuffle_size );
+                    const uint64_t index = permutationToIndex( output, shuffle_size );
+                    results_map[tid][index]++;
                 }
             } );
         }
