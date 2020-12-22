@@ -1,10 +1,9 @@
-#include "shuffle/RaoSandeliusShuffle.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 
-//#include "ThrustInclude.h"
+#include "ThrustInclude.h"
 
 uint64_t fact( uint64_t n )
 {
@@ -13,9 +12,18 @@ uint64_t fact( uint64_t n )
         res *= n;
     return n;
 }
+#include <random>
 
 int main( int argc, char** argv )
 {
+    thrust::uniform_int_distribution<uint64_t> dist;
+    // thrust::default_random_engine engine{ 0 };
+    // thrust::taus88 engine{ 0xdeadbeef };
+    thrust::ranlux48 engine{ 0 };
+    for( uint64_t i = 0; i < 1e4; i++ )
+        std::cout << std::hex << dist( engine ) << std::endl;
+
+    /*
     RaoSandeliusShuffle<> shuffle;
     DefaultRandomGenerator gen;
     const uint64_t count = 5;
@@ -45,4 +53,5 @@ int main( int argc, char** argv )
     std::cout << "Expected: " << iters / fact( count ) << std::endl;
 
     return 0;
+    */
 }
