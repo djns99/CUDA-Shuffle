@@ -57,10 +57,10 @@ using ParameterQualityShuffleTypes = ::testing::Types<
     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, LCGRoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux24RoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux48RoundFunction<target_num_rounds>>,
+//    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RoundFunction<target_num_rounds>>,
+//    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, LCGRoundFunction<target_num_rounds>>,
+//    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux24RoundFunction<target_num_rounds>>,
+//    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux48RoundFunction<target_num_rounds>>,
     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
     StdShuffle<thrust::host_vector<uint64_t>>>;
 
@@ -123,7 +123,7 @@ void reportStats( std::vector<double>& scores )
 
 TYPED_TEST( ParameterQualityTests, FullPermutation )
 {
-    const uint64_t num_loops = 50;
+    const uint64_t num_loops = 500;
     const uint64_t seed_start = 0xdeadbeef;
     std::vector<double> p_scores;
     for( uint64_t loop = 0; loop < num_loops; loop++ )
