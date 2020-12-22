@@ -107,7 +107,7 @@ private:
     RoundFunction round_function;
 };
 
-static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 8;
+static constexpr uint64_t FEISTEL_DEFAULT_NUM_ROUNDS = 16;
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using FeistelBijectiveShuffle =
     BijectiveFunctionShuffle<BijectiveFunctionCompressor<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, ContainerType, RandomGenerator>;
