@@ -14,39 +14,56 @@ template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
-using ParameterQualityShuffleTypes = ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
-                                                      ParamFeistelBijectiveScanShuffle<1>,
-                                                      ParamFeistelBijectiveScanShuffle<2>,
-                                                      ParamFeistelBijectiveScanShuffle<3>,
-                                                      ParamFeistelBijectiveScanShuffle<4>,
-                                                      ParamFeistelBijectiveScanShuffle<5>,
-                                                      ParamFeistelBijectiveScanShuffle<6>,
-                                                      ParamFeistelBijectiveScanShuffle<7>,
-                                                      ParamFeistelBijectiveScanShuffle<8>,
-                                                      ParamFeistelBijectiveScanShuffle<9>,
-                                                      ParamFeistelBijectiveScanShuffle<10>,
-                                                      ParamFeistelBijectiveScanShuffle<11>,
-                                                      ParamFeistelBijectiveScanShuffle<12>,
-                                                      ParamFeistelBijectiveScanShuffle<13>,
-                                                      ParamFeistelBijectiveScanShuffle<14>,
-                                                      ParamFeistelBijectiveScanShuffle<15>,
-                                                      ParamFeistelBijectiveScanShuffle<16>,
-                                                      ParamFeistelBijectiveScanShuffle<17>,
-                                                      ParamFeistelBijectiveScanShuffle<18>,
-                                                      ParamFeistelBijectiveScanShuffle<19>,
-                                                      ParamFeistelBijectiveScanShuffle<20>,
-                                                      ParamFeistelBijectiveScanShuffle<21>,
-                                                      ParamFeistelBijectiveScanShuffle<22>,
-                                                      ParamFeistelBijectiveScanShuffle<23>,
-                                                      ParamFeistelBijectiveScanShuffle<24>,
-                                                      ParamFeistelBijectiveScanShuffle<25>,
-                                                      ParamFeistelBijectiveScanShuffle<26>,
-                                                      ParamFeistelBijectiveScanShuffle<27>,
-                                                      ParamFeistelBijectiveScanShuffle<28>,
-                                                      ParamFeistelBijectiveScanShuffle<29>,
-                                                      ParamFeistelBijectiveScanShuffle<30>,
-                                                      ParamFeistelBijectiveScanShuffle<31>,
-                                                      ParamFeistelBijectiveScanShuffle<32>>;
+template <uint64_t NumRounds, class RoundFunction>
+using ParamRoundFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+
+//using ParameterQualityShuffleTypes = ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
+//                                                      ParamFeistelBijectiveScanShuffle<1>,
+//                                                      ParamFeistelBijectiveScanShuffle<2>,
+//                                                      ParamFeistelBijectiveScanShuffle<3>,
+//                                                      ParamFeistelBijectiveScanShuffle<4>,
+//                                                      ParamFeistelBijectiveScanShuffle<5>,
+//                                                      ParamFeistelBijectiveScanShuffle<6>,
+//                                                      ParamFeistelBijectiveScanShuffle<7>,
+//                                                      ParamFeistelBijectiveScanShuffle<8>,
+//                                                      ParamFeistelBijectiveScanShuffle<9>,
+//                                                      ParamFeistelBijectiveScanShuffle<10>,
+//                                                      ParamFeistelBijectiveScanShuffle<11>,
+//                                                      ParamFeistelBijectiveScanShuffle<12>,
+//                                                      ParamFeistelBijectiveScanShuffle<13>,
+//                                                      ParamFeistelBijectiveScanShuffle<14>,
+//                                                      ParamFeistelBijectiveScanShuffle<15>,
+//                                                      ParamFeistelBijectiveScanShuffle<16>,
+//                                                      ParamFeistelBijectiveScanShuffle<17>,
+//                                                      ParamFeistelBijectiveScanShuffle<18>,
+//                                                      ParamFeistelBijectiveScanShuffle<19>,
+//                                                      ParamFeistelBijectiveScanShuffle<20>,
+//                                                      ParamFeistelBijectiveScanShuffle<21>,
+//                                                      ParamFeistelBijectiveScanShuffle<22>,
+//                                                      ParamFeistelBijectiveScanShuffle<23>,
+//                                                      ParamFeistelBijectiveScanShuffle<24>,
+//                                                      ParamFeistelBijectiveScanShuffle<25>,
+//                                                      ParamFeistelBijectiveScanShuffle<26>,
+//                                                      ParamFeistelBijectiveScanShuffle<27>,
+//                                                      ParamFeistelBijectiveScanShuffle<28>,
+//                                                      ParamFeistelBijectiveScanShuffle<29>,
+//                                                      ParamFeistelBijectiveScanShuffle<30>,
+//                                                      ParamFeistelBijectiveScanShuffle<31>,
+//                                                      ParamFeistelBijectiveScanShuffle<32>>;
+
+constexpr uint64_t target_num_rounds = 16;
+using ParameterQualityShuffleTypes =
+    ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, LCGRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux24RoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Ranlux48RoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>>;
+
 TYPED_TEST_SUITE( ParameterQualityTests, ParameterQualityShuffleTypes );
 
 uint64_t factorial( uint64_t num )
@@ -108,7 +125,7 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
 {
     const uint64_t num_loops = 50;
     std::vector<double> p_scores;
-    for( uint64_t i = 0; i < num_loops; i++ )
+    for( uint64_t loop = 0; loop < num_loops; loop++ )
     {
         const uint64_t shuffle_size = 6;
         const uint64_t num_samples = 1e6;
@@ -129,7 +146,7 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
                      i < std::min( num_samples, samples_per_thread * ( tid + 1 ) ); i++ )
                 {
                     thrust::sequence( input.begin(), input.end(), 0 );
-                    local_shuffle( input, output, i, shuffle_size );
+                    local_shuffle( input, output, loop * num_samples + i, shuffle_size );
                     results_map[tid][permutationToIndex( output, shuffle_size )]++;
                 }
             } );
@@ -156,7 +173,7 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
         double p_score = cephes_igamc( (double)( size_fact - 1 ) / 2.0, chi_squared / 2.0 );
         std::cout << p_score << ',' << std::flush;
 
-        p_scores.emplace_back(p_score);
+        p_scores.emplace_back( p_score );
     }
 
     std::cout << std::endl;
