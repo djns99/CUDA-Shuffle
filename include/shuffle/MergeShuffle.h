@@ -106,7 +106,7 @@ private:
                 unsigned long j = nn * i >> c;
                 unsigned long k = std::min( nn * ( i + 1 ) >> c, nn );
                 assert( j < nn );
-                assert( k < nn );
+                assert( k <= nn );
                 std::shuffle( t + j, t + k, this->generators[i] );
             };
 
@@ -130,7 +130,7 @@ private:
                     unsigned long l = std::min( nn * ( i + 2 * p ) >> c, nn );
                     assert( j < nn );
                     assert( k < nn );
-                    assert( l < nn );
+                    assert( l <= nn );
                     merge( t + j, k - j, l - j, this->generators[i] );
                 };
 

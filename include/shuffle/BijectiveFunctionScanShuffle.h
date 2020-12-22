@@ -4,7 +4,6 @@
 #include "shuffle/Shuffle.h"
 #include <cuda.h>
 
-
 struct KeyFlagTuple
 {
     uint64_t key;
@@ -97,8 +96,6 @@ class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerat
     constexpr static bool device = std::is_same<ContainerType, thrust::device_vector<typename ContainerType::value_type, typename ContainerType::allocator_type>>::value;
     cached_allocator<device> alloc;
 
-    // thrust::device_vector<KeyFlagTuple> result;
-
 public:
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
@@ -122,16 +119,6 @@ public:
             thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
         else
             thrust::inclusive_scan( thrust::seq( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
-
-
-        // Without transform output iterator
-        // if( result.size() < capacity )
-        // {
-        //     result.resize( capacity );
-        // }
-        // thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity,
-        //                         result.begin(), ScanOp() );
-        // thrust::for_each( result.begin(), result.begin() + capacity, write_functor );
     }
 
     bool supportsInPlace() const override

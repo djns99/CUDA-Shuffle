@@ -46,7 +46,7 @@ private:
 class GPURandomGenerator
 {
 public:
-    __device__ GPURandomGenerator() = default;
+    __device__ GPURandomGenerator(){};
     __device__ GPURandomGenerator( uint64_t seed, uint64_t tid )
     {
         curand_init( seed, tid, 0, &state );
