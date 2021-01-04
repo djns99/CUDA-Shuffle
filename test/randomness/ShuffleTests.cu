@@ -104,3 +104,27 @@ TYPED_TEST( RandomnessTests, EvenSpacingBetweenOccurances )
         }
     }
 }
+
+TYPED_TEST( RandomnessTests, SobolevaPermutationLengthStatistic )
+{
+    const uint64_t shuffle_size = 1e6;
+    const uint64_t num_samples = 10;
+    // Must use small enough dimensions that the chi-squared test works
+    const uint64_t num_dimensions = std::min( (uint64_t)5ull, shuffle_size );
+    thrust::host_vector<uint64_t> h_results( shuffle_size );
+
+    for( uint64_t i = 0; i < num_samples; i++ )
+    {
+        this->runShuffle( shuffle_size );
+        thrust::copy( this->shuffled_container.begin(), this->shuffled_container.begin() + shuffle_size,
+                      h_results.begin() );
+        auto cycle_lengths = this->cycleLengths( h_results );
+        for( uint64_t d = 2; d < num_dimensions; d++ )
+        {
+            double chi_squared = this->sobolevaStatistic( shuffle_size, d, cycle_lengths );
+            double p_value = cephes_igamc( (double)d / 2.0, chi_squared / 2.0 );
+            std::cout << "Chi-Squared: " << chi_squared << " p-Score: " << p_value << " for D=" << d <<std::endl;
+            ASSERT_GT( p_value, this->p_score_significance ) << "For d=" << d;
+        }
+    }
+}
