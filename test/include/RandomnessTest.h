@@ -9,6 +9,7 @@
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
+#include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/SPNetworkBijectiveShuffle.h"
 #include "shuffle/StdShuffle.h"
@@ -83,6 +84,57 @@ protected:
         packed.resize( num_bits );
         return packed;
     }
+
+    // Soboleva test functions
+    std::vector<uint64_t> selectRandomDs( uint64_t n, uint64_t num_to_select )
+    {
+        constexpr uint64_t max_d = 32;
+        std::uniform_int_distribution<uint64_t> dist{ 2, std::min( max_d, n ) };
+        std::vector<uint64_t> dimensions;
+        for( uint64_t i = 0; i < num_to_select; i++ )
+            dimensions.emplace_back( dist( this->gen ) );
+        return dimensions;
+    }
+
+    template <class Container>
+    std::unordered_map<uint64_t, uint64_t> cycleLengths( const Container& data )
+    {
+        std::unordered_map<uint64_t, uint64_t> contents_set;
+
+        for( uint64_t i = 0; i < data.size(); i++ )
+            contents_set[i] = data[i];
+
+        std::unordered_map<uint64_t, uint64_t> result;
+        while( !contents_set.empty() )
+        {
+            uint64_t cycle_length = 0;
+            for( auto it = contents_set.begin(); it != contents_set.end(); cycle_length++ )
+            {
+                uint64_t next = it->second;
+                contents_set.erase( it );
+                it = contents_set.find( next );
+            }
+
+            result[cycle_length]++;
+        }
+        return result;
+    }
+
+    double sobolevaStatistic( const uint64_t n, const uint64_t d, const std::unordered_map<uint64_t, uint64_t>& cycle_lengths )
+    {
+        const double logn = log( n );
+        const double d_div_logn = (double)d / logn;
+        const double logn_div_d = logn / (double)d;
+
+        std::vector<double> scores( d, -logn_div_d );
+        for( auto cycle_pair : cycle_lengths )
+            scores[cycle_pair.first % d] += (double)cycle_pair.second;
+        const double sum_caj_sqrd =
+            std::transform_reduce( scores.begin(), scores.end(), 0.0, std::plus<double>{},
+                                   []( auto term ) { return term * term; } );
+
+        return d_div_logn * sum_caj_sqrd;
+    }
 };
 
 template <typename ShuffleFunction>
@@ -96,5 +148,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<>>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<> /*, NoOpBijectiveShuffle<>*/>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
