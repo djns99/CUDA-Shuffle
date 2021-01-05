@@ -85,17 +85,9 @@ protected:
         return packed;
     }
 
-    // Soboleva test functions
-    std::vector<uint64_t> selectRandomDs( uint64_t n, uint64_t num_to_select )
-    {
-        constexpr uint64_t max_d = 32;
-        std::uniform_int_distribution<uint64_t> dist{ 2, std::min( max_d, n ) };
-        std::vector<uint64_t> dimensions;
-        for( uint64_t i = 0; i < num_to_select; i++ )
-            dimensions.emplace_back( dist( this->gen ) );
-        return dimensions;
-    }
-
+    // Soboleva test functions, as described in:
+    // Soboleva, M. V. (2012). The asymptotic normality of the number of congruent cycles in a random permutation,
+    // Discrete Mathematics and Applications, 22(1), 91-100. doi: https://doi.org/10.1515/dma-2012-007
     template <class Container>
     std::unordered_map<uint64_t, uint64_t> cycleLengths( const Container& data )
     {
