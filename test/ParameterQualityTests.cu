@@ -1,11 +1,9 @@
 #include "PrefixTree.h"
 #include "RandomnessTest.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
-#include <condition_variable>
 #include <gtest/gtest.h>
 #include <thread>
 #include <unordered_map>
-#include <unordered_set>
 
 template <class ShuffleType>
 class ParameterQualityTests : public RandomnessTests<ShuffleType>
@@ -14,7 +12,7 @@ class ParameterQualityTests : public RandomnessTests<ShuffleType>
 
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, Taus88LCGRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
 template <uint64_t NumRounds, class RoundFunction>
 using ParamRoundFeistelBijectiveScanShuffle =
@@ -213,7 +211,7 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
     }
 }
 
-TYPED_TEST( RandomnessTests, TurningPointCount )
+TYPED_TEST( ParameterQualityTests, TurningPointCount )
 {
     const uint64_t shuffle_size = 1e6;
     const uint64_t num_samples = 50;
@@ -227,7 +225,7 @@ TYPED_TEST( RandomnessTests, TurningPointCount )
     const double expected = 2.0 * (double)( shuffle_size - 2 ) / 3.0;
     const double stddev = sqrt( (double)( 16 * shuffle_size - 29 ) / 90.0 );
 
-    std::vector<double> p_scores( num_samples );
+    std::vector<double> p_scores;
 
     for( uint64_t i = 0; i < num_samples; i++ )
     {
@@ -240,6 +238,7 @@ TYPED_TEST( RandomnessTests, TurningPointCount )
 
         const double z_score = ( (double)num_tp - expected ) / stddev;
         const double p_val = 1.0 - erf( abs( z_score ) / sqrt( 2.0 ) );
+        std::cerr << num_tp << " vs expected " << expected << " (difference of " << ((double)num_tp - expected) << "). Produced p value of: " << p_val << std::endl;
         std::cout << p_val << ",";
         p_scores.emplace_back( p_val );
     }
