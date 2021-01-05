@@ -1,6 +1,5 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
-#include "mergeshuffle/MergeShuffle.h"
 #include "shuffle/Shuffle.h"
 #include <algorithm>
 #include <thread>
@@ -98,50 +97,30 @@ private:
         while( generators.size() < q )
             generators.emplace_back( g() );
 
-        std::vector<std::thread> threads;
-        // Launch thread for local fisher yates
+            // Launch thread for local fisher yates
+#pragma omp parallel for
         for( unsigned int i = 0; i < q; i++ )
         {
-            auto func = [=]() {
-                unsigned long j = nn * i >> c;
-                unsigned long k = std::min( nn * ( i + 1 ) >> c, nn );
-                assert( j < nn );
-                assert( k <= nn );
-                std::shuffle( t + j, t + k, this->generators[i] );
-            };
-
-            if( i < q - 1 )
-                threads.emplace_back( func );
-            else
-                func();
+            unsigned long j = nn * i >> c;
+            unsigned long k = std::min( nn * ( i + 1 ) >> c, nn );
+            assert( j < nn );
+            assert( k <= nn );
+            std::shuffle( t + j, t + k, this->generators[i] );
         }
 
-        for( auto& thread : threads )
-            thread.join();
-
-        threads.clear();
         for( unsigned int p = 1; p < q; p += p )
         {
+#pragma omp parallel for
             for( unsigned int i = 0; i < q; i += 2 * p )
             {
-                auto func = [=]() {
-                    unsigned long j = nn * i >> c;
-                    unsigned long k = nn * ( i + p ) >> c;
-                    unsigned long l = std::min( nn * ( i + 2 * p ) >> c, nn );
-                    assert( j < nn );
-                    assert( k < nn );
-                    assert( l <= nn );
-                    merge( t + j, k - j, l - j, this->generators[i] );
-                };
-
-                if( ( i + 2 * p ) < q )
-                    threads.emplace_back( func );
-                else
-                    func();
+                unsigned long j = nn * i >> c;
+                unsigned long k = nn * ( i + p ) >> c;
+                unsigned long l = std::min( nn * ( i + 2 * p ) >> c, nn );
+                assert( j < nn );
+                assert( k < nn );
+                assert( l <= nn );
+                merge( t + j, k - j, l - j, this->generators[i] );
             }
-            for( auto& thread : threads )
-                thread.join();
-            threads.clear();
         }
     }
 

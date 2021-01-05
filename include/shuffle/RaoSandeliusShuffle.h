@@ -1,6 +1,5 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
-#include "mergeshuffle/MergeShuffle.h"
 #include "shuffle/Shuffle.h"
 #include <algorithm>
 #include <thread>
