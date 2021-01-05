@@ -1,6 +1,7 @@
 #pragma once
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
+#include <iostream>
 #include <random>
 
 
@@ -9,7 +10,7 @@ class DefaultRandomGenerator
 public:
     typedef uint64_t result_type;
 
-    DefaultRandomGenerator() : random_function( std::random_device()() )
+    DefaultRandomGenerator() : random_function( getRandomSeed() )
     {
     }
 
@@ -39,6 +40,13 @@ public:
     }
 
 private:
+    static uint64_t getRandomSeed()
+    {
+        uint64_t seed = std::random_device()();
+        std::cout << "Using Seed: " << seed << std::endl;
+        return seed;
+    }
+
     // thrust::xor_combine_engine<thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U>, 0, thrust::ranlux48_base, 0> random_function;
     std::mt19937_64 random_function;
 };

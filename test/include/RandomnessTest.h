@@ -148,5 +148,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, SPNetworkBijectiveScanShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<> /*, NoOpBijectiveShuffle<>*/>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<> /*, NoOpBijectiveShuffle<>*/>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );
