@@ -46,7 +46,7 @@ private:
         while( i != j )
         {
             if( flip() )
-                std::swap( *i, *( j-- ) );
+                std::swap( *i, *( --j ) );
             else
                 i++;
         }

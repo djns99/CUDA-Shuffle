@@ -18,6 +18,6 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Suppressing benchmark's tests" FORC
 add_subdirectory(vendor/google/benchmark)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(vendor/google/googletest/googletest)
-add_subdirectory(mergeshuffle)
+add_subdirectory(mergeshuffle-modified)
 add_subdirectory(test)
 add_subdirectory(benchmarks)
