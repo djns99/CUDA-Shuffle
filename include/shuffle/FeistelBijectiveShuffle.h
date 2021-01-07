@@ -5,7 +5,7 @@
 #include "shuffle/BijectiveFunctionSortShuffle.h"
 #include "shuffle/FeistelRoundFunctions.h"
 
-template <uint64_t num_rounds, class RoundFunction = Taus88LCGRoundFunction<num_rounds>>
+template <uint64_t num_rounds, class RoundFunction = WyHashRoundFunction<num_rounds>>
 class FeistelBijectiveFunction
 {
 private:
