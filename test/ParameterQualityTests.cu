@@ -238,8 +238,8 @@ TYPED_TEST( ParameterQualityTests, TurningPointCount )
 
         const double z_score = ( (double)num_tp - expected ) / stddev;
         const double p_val = 1.0 - erf( abs( z_score ) / sqrt( 2.0 ) );
-        std::cerr << num_tp << " vs expected " << expected << " (difference of " << ((double)num_tp - expected) << "). Produced p value of: " << p_val << std::endl;
-        std::cout << p_val << ",";
+        // std::cerr << num_tp << " vs expected " << expected << " (difference of " << ((double)num_tp - expected) << "). Produced p value of: " << p_val << std::endl;
+        std::cout << p_val << "," << std::flush;
         p_scores.emplace_back( p_val );
     }
 
