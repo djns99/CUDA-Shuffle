@@ -12,53 +12,57 @@ class ParameterQualityTests : public RandomnessTests<ShuffleType>
 
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, Taus88LCGRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
 template <uint64_t NumRounds, class RoundFunction>
 using ParamRoundFeistelBijectiveScanShuffle =
     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
-//using ParameterQualityShuffleTypes = ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
-//                                                      ParamFeistelBijectiveScanShuffle<1>,
-//                                                      ParamFeistelBijectiveScanShuffle<2>,
-//                                                      ParamFeistelBijectiveScanShuffle<3>,
-//                                                      ParamFeistelBijectiveScanShuffle<4>,
-//                                                      ParamFeistelBijectiveScanShuffle<5>,
-//                                                      ParamFeistelBijectiveScanShuffle<6>,
-//                                                      ParamFeistelBijectiveScanShuffle<7>,
-//                                                      ParamFeistelBijectiveScanShuffle<8>,
-//                                                      ParamFeistelBijectiveScanShuffle<9>,
-//                                                      ParamFeistelBijectiveScanShuffle<10>,
-//                                                      ParamFeistelBijectiveScanShuffle<11>,
-//                                                      ParamFeistelBijectiveScanShuffle<12>,
-//                                                      ParamFeistelBijectiveScanShuffle<13>,
-//                                                      ParamFeistelBijectiveScanShuffle<14>,
-//                                                      ParamFeistelBijectiveScanShuffle<15>,
-//                                                      ParamFeistelBijectiveScanShuffle<16>,
-//                                                      ParamFeistelBijectiveScanShuffle<17>,
-//                                                      ParamFeistelBijectiveScanShuffle<18>,
-//                                                      ParamFeistelBijectiveScanShuffle<19>,
-//                                                      ParamFeistelBijectiveScanShuffle<20>,
-//                                                      ParamFeistelBijectiveScanShuffle<21>,
-//                                                      ParamFeistelBijectiveScanShuffle<22>,
-//                                                      ParamFeistelBijectiveScanShuffle<23>,
-//                                                      ParamFeistelBijectiveScanShuffle<24>,
-//                                                      ParamFeistelBijectiveScanShuffle<25>,
-//                                                      ParamFeistelBijectiveScanShuffle<26>,
-//                                                      ParamFeistelBijectiveScanShuffle<27>,
-//                                                      ParamFeistelBijectiveScanShuffle<28>,
-//                                                      ParamFeistelBijectiveScanShuffle<29>,
-//                                                      ParamFeistelBijectiveScanShuffle<30>,
-//                                                      ParamFeistelBijectiveScanShuffle<31>,
-//                                                      ParamFeistelBijectiveScanShuffle<32>>;
+/*
+ using ParameterQualityShuffleTypes = ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
+                                                      ParamFeistelBijectiveScanShuffle<1>,
+                                                      ParamFeistelBijectiveScanShuffle<2>,
+                                                      ParamFeistelBijectiveScanShuffle<3>,
+                                                      ParamFeistelBijectiveScanShuffle<4>,
+                                                      ParamFeistelBijectiveScanShuffle<5>,
+                                                      ParamFeistelBijectiveScanShuffle<6>,
+                                                      ParamFeistelBijectiveScanShuffle<7>,
+                                                      ParamFeistelBijectiveScanShuffle<8>,
+                                                      ParamFeistelBijectiveScanShuffle<9>,
+                                                      ParamFeistelBijectiveScanShuffle<10>,
+                                                      ParamFeistelBijectiveScanShuffle<11>,
+                                                      ParamFeistelBijectiveScanShuffle<12>,
+                                                      ParamFeistelBijectiveScanShuffle<13>,
+                                                      ParamFeistelBijectiveScanShuffle<14>,
+                                                      ParamFeistelBijectiveScanShuffle<15>,
+                                                      ParamFeistelBijectiveScanShuffle<16>,
+                                                      ParamFeistelBijectiveScanShuffle<17>,
+                                                      ParamFeistelBijectiveScanShuffle<18>,
+                                                      ParamFeistelBijectiveScanShuffle<19>,
+                                                      ParamFeistelBijectiveScanShuffle<20>,
+                                                      ParamFeistelBijectiveScanShuffle<21>,
+                                                      ParamFeistelBijectiveScanShuffle<22>,
+                                                      ParamFeistelBijectiveScanShuffle<23>,
+                                                      ParamFeistelBijectiveScanShuffle<24>,
+                                                      ParamFeistelBijectiveScanShuffle<25>,
+                                                      ParamFeistelBijectiveScanShuffle<26>,
+                                                      ParamFeistelBijectiveScanShuffle<27>,
+                                                      ParamFeistelBijectiveScanShuffle<28>,
+                                                      ParamFeistelBijectiveScanShuffle<29>,
+                                                      ParamFeistelBijectiveScanShuffle<30>,
+                                                      ParamFeistelBijectiveScanShuffle<31>,
+                                                      ParamFeistelBijectiveScanShuffle<32>
+
+                                                      >;
+*/
 
 constexpr uint64_t target_num_rounds = 16;
-using ParameterQualityShuffleTypes =
-    ::testing::Types<ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
-                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
-                     StdShuffle<thrust::host_vector<uint64_t>>>;
+using ParameterQualityShuffleTypes = ::testing::Types<
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
+    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
+    StdShuffle<thrust::host_vector<uint64_t>>>;
 
 TYPED_TEST_SUITE( ParameterQualityTests, ParameterQualityShuffleTypes );
 
@@ -198,7 +202,7 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
         {
             double chi_squared = this->sobolevaStatistic( shuffle_size, d, cycle_lengths );
             double p_value = cephes_igamc( (double)d / 2.0, chi_squared / 2.0 );
-            p_scores[ d - 2 ].emplace_back( p_value );
+            p_scores[d - 2].emplace_back( p_value );
         }
     }
 

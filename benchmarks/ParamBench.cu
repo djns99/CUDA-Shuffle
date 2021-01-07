@@ -2,15 +2,11 @@
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
+#include "shuffle/StdShuffle.h"
 #include <sstream>
 #include <vector>
 
 using DataType = uint64_t;
-
-
-template <uint64_t NumRounds>
-using ParamFeistelBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
 
 
 template <class ShuffleFunction>
@@ -51,39 +47,22 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
     b->Ranges( { { 1 << 24, 1 << 24 }, { 1, 1 } } );
 }
 
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<1> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<2> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<3> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<4> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<5> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<6> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<7> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<8> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<9> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<10> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<11> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<12> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<13> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<14> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<15> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<16> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<17> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<18> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<19> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<20> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<21> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<22> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<23> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<24> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<25> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<26> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<27> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<28> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<29> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<30> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<31> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<32> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<64> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<128> )->Apply( argsGenerator );
+template <uint64_t NumRounds, class RoundFunction>
+using ParamFeistelBijectiveScanShuffle =
+BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
+template <uint64_t NumRounds, class RoundFunction>
+using HostParamFeistelBijectiveScanShuffle =
+BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+
+constexpr uint64_t target_num_rounds = 12;
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<thrust::host_vector<uint64_t>> )->Apply( argsGenerator );
 
 BENCHMARK_MAIN();
