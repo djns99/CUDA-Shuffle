@@ -1,8 +1,8 @@
 #include "CudaHelpers.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/StdShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
-#include "shuffle/StdShuffle.h"
 #include <sstream>
 #include <vector>
 
@@ -49,20 +49,36 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
 
 template <uint64_t NumRounds, class RoundFunction>
 using ParamFeistelBijectiveScanShuffle =
-BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
 template <uint64_t NumRounds, class RoundFunction>
 using HostParamFeistelBijectiveScanShuffle =
-BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, std::vector<uint64_t>, DefaultRandomGenerator>;
 
-constexpr uint64_t target_num_rounds = 12;
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, ParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, HostParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )->Apply( argsGenerator );
+constexpr uint64_t target_num_rounds = 16;
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<thrust::host_vector<uint64_t>> )->Apply( argsGenerator );
 
 BENCHMARK_MAIN();

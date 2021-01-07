@@ -2,8 +2,8 @@
 #include "GatherShuffle.h"
 #include "ScatterShuffle.h"
 #include "ThrustInclude.h"
-#include "shuffle/DartThrowing.h"
 #include "shuffle/AndersonShuffle.h"
+#include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/GPUSwapShuffle.h"
@@ -100,61 +100,67 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
     b->Ranges( { { 1 << 8, 1 << 21 }, { 0, 1 } } );
 }
 
+template <uint64_t NumRounds, class RoundFunction>
+using ParamFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::device_vector<DataType>, DefaultRandomGenerator>;
+template <uint64_t NumRounds, class RoundFunction>
+using HostParamFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::cpp::vector<DataType>, DefaultRandomGenerator>;
+template <uint64_t NumRounds, class RoundFunction>
+using OMPParamFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::omp::vector<DataType>, DefaultRandomGenerator>;
+
+constexpr uint64_t target_num_rounds = 16;
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<> )->Apply( argsGenerator );
+
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::cpp::vector<DataType>> )->Apply( argsGenerator );
+
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    OMPParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    OMPParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    OMPParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    OMPParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::omp::vector<DataType>> )->Apply( argsGenerator );
+
+
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, RaoSandeliusShuffle<std::vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// FeistelBijectiveShuffle<thrust::device_vector<DataType>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// FeistelBijectiveSortShuffle<thrust::device_vector<DataType>> )
-//    ->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<thrust::device_vector<DataType>, 5, 1> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, AndersonShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, FeistelBijectiveScanShuffle<thrust::device_vector<DataType>> )
-    ->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// SPNetworkBijectiveShuffle<thrust::device_vector<DataType>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// SPNetworkBijectiveSortShuffle<thrust::device_vector<DataType>> )
-//    ->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// SPNetworkBijectiveScanShuffle<thrust::device_vector<DataType>> )
-//    ->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// LCGBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator
-// );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// LCGBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply(
-// argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// NoOpBijectiveShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator
-// );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// NoOpBijectiveSortShuffle<thrust::device_vector<DataType>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// NoOpBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply(
-// argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<DataType>> )->Apply( argsGenerator );
+
 BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkScatterGather, ScatterShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// SortShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, FisherYatesShuffle<std::vector<DataType>> )->Apply( argsGenerator );
-// Too slow
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// LubyRackoffBijectiveShuffle<thrust::device_vector<uint64_t>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// LubyRackoffBijectiveSortShuffle<thrust::device_vector<uint64_t>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE( benchmarkFunction,
-// LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>> )->Apply(
-// argsGenerator );
-// BENCHMARK_TEMPLATE(benchmarkFunction,
-// GPUSwapShuffle<uint64_t>)->Apply(argsGenerator);
+
 
 BENCHMARK_MAIN();

@@ -14,3 +14,6 @@
 #include <thrust/gather.h>
 #include <thrust/iterator/transform_output_iterator.h>
 #include <thrust/shuffle.h>
+
+#include <thrust/system/cpp/vector.h>
+#include <thrust/system/omp/vector.h>
