@@ -39,6 +39,11 @@ public:
         return std::mt19937_64::min();
     }
 
+    void discard( uint64_t num )
+    {
+        random_function.discard( num );
+    }
+
 private:
     static uint64_t getRandomSeed()
     {
