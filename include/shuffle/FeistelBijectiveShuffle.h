@@ -72,7 +72,11 @@ private:
             i++;
             capacity >>= 1;
         }
-        return i;
+
+        if( std::is_same_v< RC5RoundFunction<num_rounds>, RoundFunction> )
+            return std::max( i, uint64_t( 8 ) ); // Minimum number required for good results
+        else
+            return i;
     }
 
     __host__ __device__ uint32_t applyRoundFunction( RoundState state, uint64_t round ) const

@@ -10,8 +10,8 @@ class ParameterQualityTests : public RandomnessTests<ShuffleType>
 {
 };
 
-constexpr bool USE_PVALUE = false;
-constexpr uint64_t NUM_SAMPLES = 50;
+constexpr bool USE_PVALUE = true;
+constexpr uint64_t NUM_SAMPLES = 500;
 constexpr uint64_t SAMPLE_SIZE = 1e6;
 
 template <uint64_t NumRounds>
