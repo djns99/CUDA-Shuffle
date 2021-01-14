@@ -18,9 +18,10 @@ struct WyHashRoundFunction
         }
     }
 
-    __host__ __device__ uint64_t operator()( uint64_t value, uint64_t round ) const
+    __host__ __device__ uint32_t operator()( uint32_t input, uint64_t round, uint32_t /*constant side*/ ) const
     {
-        return WyHash::wyhash64_v4_key2( key[round], value );
+        const uint64_t res = WyHash::wyhash64_v4_key2( key[round], input );
+        return res ^ (res >> 32);
     }
 
     uint64_t key[num_rounds][2];
@@ -36,17 +37,17 @@ struct CRC32CRoundFunction
         std::uniform_int_distribution<uint64_t> dist;
         for( uint64_t i = 0; i < num_rounds; i++ )
         {
-            key[i][0] = dist( gen );
-            key[i][1] = dist( gen );
+            key[i] = dist( gen );
         }
     }
 
-    __host__ __device__ static constexpr uint32_t crc32c( uint64_t input, uint32_t crc = UINT32_MAX )
+    template <class Data>
+    __host__ __device__ static constexpr uint32_t crc32c( Data input, uint32_t crc = UINT32_MAX )
     {
         // Source: https://en.wikipedia.org/wiki/Computation_of_cyclic_redundancy_checks
         // Uses CRC32C polynomial
 #pragma unroll
-        for( uint64_t i = 0; i < 64; i += 8 )
+        for( uint64_t i = 0; i < sizeof( Data ) * 8; i += 8 )
         {
             crc ^= ( input >> 8 ) & 0xFF;
 #pragma unroll
@@ -56,20 +57,13 @@ struct CRC32CRoundFunction
         return crc;
     }
 
-    __host__ __device__ static constexpr size_t hashCombine( uint64_t lhs, uint64_t rhs )
-    {
-        lhs ^= rhs + 0x9e3779b9 + ( lhs << 6 ) + ( lhs >> 2 );
-        return lhs;
-    }
-
-    __host__ __device__ uint64_t operator()( uint64_t value, uint64_t round ) const
+    __host__ __device__ uint32_t operator()( uint32_t value, uint64_t round, uint32_t /*constant side*/ ) const
     {
         // TODO Abysmal quality...
-        return (uint64_t)crc32c( hashCombine( value, key[round][0] ) ) |
-               ( (uint64_t)crc32c( hashCombine( value, key[round][1] ) ) << 32ull );
+        return crc32c( key[round], crc32c( value ) );
     }
 
-    uint64_t key[num_rounds][2];
+    uint64_t key[num_rounds];
 };
 
 template <class DRBG, uint64_t discard, uint64_t num_rounds>
@@ -94,12 +88,10 @@ struct DRBGGenerator
         return lhs;
     }
 
-    __host__ __device__ uint64_t operator()( uint64_t value, uint64_t round ) const
+    __host__ __device__ uint32_t operator()( uint32_t value, uint64_t round, uint32_t /*constant side*/ ) const
     {
-        assert( out_bits < 52 && "thrust::uniform_int_distribution requires the number to be "
-                                 "representable by a double" );
-        thrust::uniform_int_distribution<uint64_t> dist( 0, ( 1ull << out_bits ) - 1 );
-        DRBG drbg{ hashCombine( key[round], value ) };
+        thrust::uniform_int_distribution<uint32_t> dist( 0, ( 1ull << out_bits ) - 1 );
+        DRBG drbg{ hashCombine( value, key[round] ) };
         drbg.discard( discard );
         return dist( drbg );
     }
@@ -140,12 +132,12 @@ struct DRBGCombiner
         return lhs;
     }
 
-    __host__ __device__ uint64_t operator()( uint64_t value, uint64_t round ) const
+    __host__ __device__ uint32_t operator()( uint32_t value, uint64_t round, uint32_t /*constant side*/ ) const
     {
         // Combine the key with the value for the seed
         // Otherwise we are fully relying on the randomness of hash combine
         // Note this also ensures Taus88 doesnt get seed of 0
-        uint64_t seed = hashCombine( key[round], value );
+        uint64_t seed = hashCombine( value, key[round] );
         DRBG1 drbg1{ seed };
         // Invert seed so we can use the same generator twice
         DRBG2 drbg2{ ~seed };
@@ -153,12 +145,14 @@ struct DRBGCombiner
         drbg2.discard( discard2 );
 
         // TODO This int distribution is slow. Performance with this removed is 3 GiBs with memory limit of 6 GiBs
-        // TODO The 64 bit version is broken hence the need for 2 32 bit invocations
         thrust::uniform_int_distribution<uint32_t> dist;
-        uint64_t val1 = (uint64_t)dist( drbg1 ) | ( (uint64_t)dist( drbg1 ) << 32 );
-        uint64_t val2 = (uint64_t)dist( drbg2 ) | ( (uint64_t)dist( drbg1 ) << 32 );
+        uint32_t val1 = dist( drbg1 );
+        uint32_t val2 = dist( drbg2 );
+        // uint64_t val1 = (uint64_t)dist( drbg1 ) | ( (uint64_t)dist( drbg1 ) << 32 );
+        // uint64_t val2 = (uint64_t)dist( drbg2 ) | ( (uint64_t)dist( drbg1 ) << 32 );
 
-        const uint64_t result = hashCombine( val1, val2 );
+
+        const uint32_t result = hashCombine( val1, val2 );
         return result;
     }
 
@@ -181,3 +175,41 @@ using DualLCGRoundFunction =
     DRBGCombiner<num_rounds, thrust::default_random_engine, 1, thrust::default_random_engine, 1>;
 template <uint64_t num_rounds>
 using DualRanluxRoundFunction = DRBGCombiner<num_rounds, thrust::ranlux48, 1, thrust::ranlux48, 1>;
+
+template <uint64_t num_rounds>
+struct RC5RoundFunction
+{
+    // Based off data dependent rotations in rivest cipher
+    template <class RandomGenerator>
+    void init( RandomGenerator& gen, uint64_t, uint64_t _out_bits )
+    {
+        out_bits = _out_bits;
+        out_mask = (1ull << out_bits) - 1;
+        is_power_2 = !(out_bits & (out_bits - 1));
+        std::uniform_int_distribution<uint32_t> dist(0, out_mask);
+        for( uint64_t i = 0; i < num_rounds; i++ )
+        {
+            key[i] = dist( gen );
+        }
+    }
+
+    __host__ __device__ uint32_t rotl( uint32_t value, uint32_t amount ) const
+    {
+        uint64_t rot_amnt = is_power_2 ? (amount & (out_bits - 1)) : (amount % out_bits);
+        return (value << rot_amnt) | (value >> (out_bits-rot_amnt));
+    }
+
+    __host__ __device__ uint32_t operator()( uint32_t value, uint64_t round, uint32_t const_side ) const
+    {
+        assert( value < (2ull << out_bits) );
+        assert( const_side < (1ull << out_bits) );
+        // RC5 Algorithm with random key
+        // XOR the const_side at the end to cancel the XOR in the feistel implementation
+        return (rotl( (const_side ^ value) & out_mask, value ) + key[round]) ^ const_side;
+    }
+
+    uint32_t key[num_rounds];
+    uint32_t out_bits;
+    uint32_t out_mask;
+    bool is_power_2;
+};

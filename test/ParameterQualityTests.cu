@@ -10,6 +10,10 @@ class ParameterQualityTests : public RandomnessTests<ShuffleType>
 {
 };
 
+constexpr bool USE_PVALUE = false;
+constexpr uint64_t NUM_SAMPLES = 50;
+constexpr uint64_t SAMPLE_SIZE = 1e6;
+
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
@@ -57,12 +61,13 @@ using ParamRoundFeistelBijectiveScanShuffle =
 */
 
 constexpr uint64_t target_num_rounds = 16;
-using ParameterQualityShuffleTypes = ::testing::Types<
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
-    ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
-    StdShuffle<thrust::host_vector<uint64_t>>>;
+using ParameterQualityShuffleTypes =
+    ::testing::Types<ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
+                     ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
+                     StdShuffle<thrust::host_vector<uint64_t>>>;
 
 TYPED_TEST_SUITE( ParameterQualityTests, ParameterQualityShuffleTypes );
 
@@ -123,13 +128,13 @@ void reportStats( std::vector<double>& scores )
 
 TYPED_TEST( ParameterQualityTests, FullPermutation )
 {
-    const uint64_t num_loops = 50;
+    const uint64_t num_loops = NUM_SAMPLES;
     const uint64_t seed_start = 0xdeadbeef;
     std::vector<double> p_scores;
     for( uint64_t loop = 0; loop < num_loops; loop++ )
     {
         const uint64_t shuffle_size = 6;
-        const uint64_t num_samples = 1e6;
+        const uint64_t num_samples = SAMPLE_SIZE;
 
         const uint64_t num_threads = 6;
         const uint64_t samples_per_thread = ( num_samples + ( num_threads - 1 ) ) / num_threads;
@@ -172,20 +177,27 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
             chi_squared += pow( results[permutations[i]] - expected_occurances, 2 ) / expected_occurances;
         }
 
-        double p_score = cephes_igamc( (double)( size_fact - 1 ) / 2.0, chi_squared / 2.0 );
-        std::cout << p_score << ',' << std::flush;
-
-        p_scores.emplace_back( p_score );
+        if( USE_PVALUE )
+        {
+            double p_score = cephes_igamc( (double)( size_fact - 1 ) / 2.0, chi_squared / 2.0 );
+            std::cout << p_score << ',' << std::flush;
+            p_scores.emplace_back( p_score );
+        }
+        else
+        {
+            std::cout << chi_squared << ',' << std::flush;
+        }
     }
 
     std::cout << std::endl;
-    reportStats( p_scores );
+    if( USE_PVALUE )
+        reportStats( p_scores );
 }
 
 TYPED_TEST( ParameterQualityTests, PermutationLength )
 {
-    const uint64_t shuffle_size = 1e6;
-    const uint64_t num_samples = 50;
+    const uint64_t shuffle_size = SAMPLE_SIZE;
+    const uint64_t num_samples = NUM_SAMPLES;
     const uint64_t max_dimension = std::min( (uint64_t)5ull, shuffle_size );
 
     thrust::host_vector<uint64_t> input( shuffle_size );
@@ -202,23 +214,28 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
         {
             double chi_squared = this->sobolevaStatistic( shuffle_size, d, cycle_lengths );
             double p_value = cephes_igamc( (double)d / 2.0, chi_squared / 2.0 );
-            p_scores[d - 2].emplace_back( p_value );
+            if( USE_PVALUE )
+                p_scores[d - 2].emplace_back( p_value );
+            else
+                p_scores[d - 2].emplace_back( chi_squared );
         }
     }
+
 
     for( auto& d_p_score : p_scores )
     {
         for( auto score : d_p_score )
             std::cout << score << ",";
         std::cout << std::endl;
-        reportStats( d_p_score );
+        if( USE_PVALUE )
+            reportStats( d_p_score );
     }
 }
 
 TYPED_TEST( ParameterQualityTests, TurningPointCount )
 {
-    const uint64_t shuffle_size = 1e6;
-    const uint64_t num_samples = 50;
+    const uint64_t shuffle_size = SAMPLE_SIZE;
+    const uint64_t num_samples = NUM_SAMPLES;
 
     thrust::host_vector<uint64_t> input( shuffle_size );
     thrust::sequence( input.begin(), input.end(), 0 );
@@ -243,10 +260,18 @@ TYPED_TEST( ParameterQualityTests, TurningPointCount )
         const double z_score = ( (double)num_tp - expected ) / stddev;
         const double p_val = 1.0 - erf( abs( z_score ) / sqrt( 2.0 ) );
         // std::cerr << num_tp << " vs expected " << expected << " (difference of " << ((double)num_tp - expected) << "). Produced p value of: " << p_val << std::endl;
-        std::cout << p_val << "," << std::flush;
-        p_scores.emplace_back( p_val );
+        if( USE_PVALUE )
+        {
+            std::cout << p_val << "," << std::flush;
+            p_scores.emplace_back( p_val );
+        }
+        else
+        {
+            std::cout << z_score << "," << std::flush;
+        }
     }
 
     std::cout << std::endl;
-    reportStats( p_scores );
+    if( USE_PVALUE )
+        reportStats( p_scores );
 }

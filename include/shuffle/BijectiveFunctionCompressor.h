@@ -14,6 +14,7 @@ public:
 
     __host__ __device__ uint64_t operator()( uint64_t val ) const
     {
+
         do
         {
             const uint64_t last_val = val;

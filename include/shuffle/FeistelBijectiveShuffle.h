@@ -52,7 +52,7 @@ public:
         assert( ( state.right >> right_side_bits ) == 0 );
 
         // Combine the left and right sides together to get result
-        return state.left << right_side_bits | state.right;
+        return (uint64_t)state.left << right_side_bits | (uint64_t)state.right;
     }
 
     constexpr static bool isDeterministic()
@@ -75,10 +75,10 @@ private:
         return i;
     }
 
-    __host__ __device__ uint32_t applyRoundFunction( uint64_t value, uint64_t round ) const
+    __host__ __device__ uint32_t applyRoundFunction( RoundState state, uint64_t round ) const
     {
         // Hash so value affects more than just the lower bits of the key
-        return round_function( value, round ) & left_side_mask;
+        return state.left ^ (round_function( state.right, round, state.left ) & left_side_mask);
     }
 
     // __host__ __device__ uint32_t applyRoundFunction( uint64_t value, const uint64_t key ) const
@@ -89,8 +89,10 @@ private:
 
     __host__ __device__ RoundState doRound( const RoundState state, const uint64_t round ) const
     {
+        assert( state.right <= right_side_mask);
+        assert( state.left <= left_side_mask);
         const uint32_t new_left = state.right & left_side_mask;
-        const uint32_t round_function_res = state.left ^ applyRoundFunction( state.right, round );
+        const uint32_t round_function_res = applyRoundFunction( state, round );
         if( right_side_bits != left_side_bits )
         {
             // Upper bit of the old right becomes lower bit of new right if we have odd length feistel

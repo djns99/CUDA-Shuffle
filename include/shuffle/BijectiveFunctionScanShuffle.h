@@ -51,10 +51,10 @@ struct MakeTupleFunctor
     }
 };
 
-template<bool device>
+template <bool device>
 struct cached_allocator;
 
-template<>
+template <>
 struct cached_allocator<true>
 {
     typedef char value_type;
@@ -72,7 +72,7 @@ struct cached_allocator<true>
     }
 };
 
-template<>
+template <>
 struct cached_allocator<false>
 {
     typedef char value_type;
@@ -93,7 +93,8 @@ struct cached_allocator<false>
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
-    constexpr static bool device = std::is_same<ContainerType, thrust::device_vector<typename ContainerType::value_type, typename ContainerType::allocator_type>>::value;
+    constexpr static bool device =
+        std::is_same<ContainerType, thrust::device_vector<typename ContainerType::value_type, typename ContainerType::allocator_type>>::value;
     cached_allocator<device> alloc;
 
 public:
@@ -116,7 +117,8 @@ public:
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
         if( device )
-            thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
+            thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity,
+                                    output_it, ScanOp() );
         else
             thrust::inclusive_scan( thrust::seq( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
     }
