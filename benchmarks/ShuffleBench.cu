@@ -123,6 +123,9 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     ParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
     ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    ParamFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<> )->Apply( argsGenerator );
 
@@ -138,6 +141,9 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     HostParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
     ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    HostParamFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::cpp::vector<DataType>> )->Apply( argsGenerator );
 
 BENCHMARK_TEMPLATE( benchmarkFunction,
@@ -151,6 +157,9 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     OMPParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
+    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    OMPParamFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::omp::vector<DataType>> )->Apply( argsGenerator );
 

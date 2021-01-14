@@ -73,8 +73,7 @@ public:
     }
 };
 
-using ShuffleTypes =
-    ::testing::Types<StdShuffle<>,
+using ShuffleTypes = ::testing::Types<StdShuffle<>,
                      SortShuffle<>,
                      MergeShuffle<>,
                      FisherYatesShuffle<>,
@@ -113,9 +112,8 @@ using ShuffleTypes =
                      LubyRackoffBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      NoOpBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>
-
-                     >;
+                     NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
+                     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>>;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
 
 TYPED_TEST( FunctionalTests, SameLength )

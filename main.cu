@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "ThrustInclude.h"
+#include "shuffle/FeistelBijectiveShuffle.h"
 
 uint64_t fact( uint64_t n )
 {
@@ -16,15 +16,9 @@ uint64_t fact( uint64_t n )
 
 int main( int argc, char** argv )
 {
-    thrust::uniform_int_distribution<uint64_t> dist;
-    // thrust::default_random_engine engine{ 0 };
-    // thrust::taus88 engine{ 0xdeadbeef };
-    thrust::ranlux48 engine{ 0 };
-    for( uint64_t i = 0; i < 1e4; i++ )
-        std::cout << std::hex << dist( engine ) << std::endl;
-
-    /*
-    RaoSandeliusShuffle<> shuffle;
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>,
+        std::vector<uint64_t>, DefaultRandomGenerator>
+        shuffle;
     DefaultRandomGenerator gen;
     const uint64_t count = 5;
     std::unordered_map<std::string, uint64_t> map;
@@ -53,5 +47,4 @@ int main( int argc, char** argv )
     std::cout << "Expected: " << iters / fact( count ) << std::endl;
 
     return 0;
-    */
 }
