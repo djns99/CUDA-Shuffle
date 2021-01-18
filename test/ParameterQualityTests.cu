@@ -1,6 +1,7 @@
 #include "PrefixTree.h"
 #include "RandomnessTest.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
+#include <cxxabi.h>
 #include <gtest/gtest.h>
 #include <thread>
 #include <unordered_map>
@@ -8,19 +9,40 @@
 template <class ShuffleType>
 class ParameterQualityTests : public RandomnessTests<ShuffleType>
 {
+protected:
+    std::string getName()
+    {
+        using namespace std::string_literals;
+        return ::testing::UnitTest::GetInstance()->current_test_info()->name() + " "s +
+               demangle( typeid( ShuffleType ).name() );
+    }
+
+    std::string demangle( const char* name )
+    {
+        // https://stackoverflow.com/questions/281818/unmangling-the-result-of-stdtype-infoname
+        int status = -4;
+        std::unique_ptr<char, void ( * )( void* )> res{ abi::__cxa_demangle( name, NULL, NULL, &status ),
+                                                        std::free };
+
+        return ( status == 0 ) ? res.get() : name;
+    }
 };
 
-constexpr bool USE_PVALUE = true;
-constexpr uint64_t NUM_SAMPLES = 500;
-constexpr uint64_t SAMPLE_SIZE = 1e6;
+template <class ShuffleType>
+class HostParameterQualityTests : public ParameterQualityTests<ShuffleType>
+{
+};
+
+constexpr bool USE_PVALUE = false;
+constexpr uint64_t FULL_NUM_SAMPLES = 10000;
+constexpr uint64_t FULL_SAMPLE_SIZE = 1e6;
+
+constexpr uint64_t NUM_SAMPLES = 10000;
+constexpr uint64_t SAMPLE_SIZE = (1ull << 24ul) + 1;
 
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
-
-template <uint64_t NumRounds, class RoundFunction>
-using ParamRoundFeistelBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
 /*
  using ParameterQualityShuffleTypes = ::testing::Types<StdShuffle<thrust::host_vector<uint64_t>>,
@@ -60,8 +82,26 @@ using ParamRoundFeistelBijectiveScanShuffle =
                                                       >;
 */
 
+template <uint64_t NumRounds, class RoundFunction>
+using HostParamRoundFeistelBijectiveScanShuffle =
+BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+template <uint64_t NumRounds, class RoundFunction>
+using ParamRoundFeistelBijectiveScanShuffle =
+BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
+
+
 constexpr uint64_t target_num_rounds = 16;
-using ParameterQualityShuffleTypes =
+
+// Runs the small shuffle size on the host to avoid GPU overhead
+using HostParameterQualityShuffleTypes =
+    ::testing::Types<HostParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
+                     HostParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
+                     HostParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
+                     HostParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
+                     HostParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
+                     StdShuffle<thrust::host_vector<uint64_t>>>;
+
+using DeviceParameterQualityShuffleTypes =
     ::testing::Types<ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
@@ -69,7 +109,8 @@ using ParameterQualityShuffleTypes =
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
                      StdShuffle<thrust::host_vector<uint64_t>>>;
 
-TYPED_TEST_SUITE( ParameterQualityTests, ParameterQualityShuffleTypes );
+TYPED_TEST_SUITE( ParameterQualityTests, DeviceParameterQualityShuffleTypes );
+TYPED_TEST_SUITE( HostParameterQualityTests, HostParameterQualityShuffleTypes );
 
 uint64_t factorial( uint64_t num )
 {
@@ -126,15 +167,15 @@ void reportStats( std::vector<double>& scores )
     std::cout << ", Mean: " << sum / (double)scores.size() << std::endl;
 }
 
-TYPED_TEST( ParameterQualityTests, FullPermutation )
+TYPED_TEST( HostParameterQualityTests, FullPermutation )
 {
-    const uint64_t num_loops = NUM_SAMPLES;
+    const uint64_t num_loops = FULL_NUM_SAMPLES;
     const uint64_t seed_start = 0xdeadbeef;
     std::vector<double> p_scores;
     for( uint64_t loop = 0; loop < num_loops; loop++ )
     {
         const uint64_t shuffle_size = 6;
-        const uint64_t num_samples = SAMPLE_SIZE;
+        const uint64_t num_samples = FULL_SAMPLE_SIZE;
 
         const uint64_t num_threads = 6;
         const uint64_t samples_per_thread = ( num_samples + ( num_threads - 1 ) ) / num_threads;
@@ -170,6 +211,9 @@ TYPED_TEST( ParameterQualityTests, FullPermutation )
         const uint64_t size_fact = factorial( shuffle_size );
         const double expected_occurances = num_samples / (double)size_fact;
 
+        if( loop == 0 && !USE_PVALUE )
+            std::cout << this->getName() << ": chi2," << ( size_fact - 1 ) << ","; // Degrees of freedom
+
         auto& permutations = allPermutations( shuffle_size );
         double chi_squared = 0.0;
         for( uint64_t i = 0; i < size_fact; i++ )
@@ -200,16 +244,19 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
     const uint64_t num_samples = NUM_SAMPLES;
     const uint64_t max_dimension = std::min( (uint64_t)5ull, shuffle_size );
 
-    thrust::host_vector<uint64_t> input( shuffle_size );
+    using Container = typename TypeParam::Shuffle::container_type;
+    Container input( shuffle_size );
     thrust::sequence( input.begin(), input.end(), 0 );
-    thrust::host_vector<uint64_t> output( shuffle_size );
+    Container output( shuffle_size );
+    thrust::host_vector<uint64_t> h_output( shuffle_size );
 
     std::vector<std::vector<double>> p_scores( max_dimension - 2 );
 
     for( uint64_t i = 0; i < num_samples; i++ )
     {
         this->shuffle( input, output, i, shuffle_size );
-        auto cycle_lengths = this->cycleLengths( output );
+        thrust::copy( output.begin(), output.begin() + shuffle_size, h_output.begin() );
+        auto cycle_lengths = this->cycleLengths( h_output );
         for( uint64_t d = 2; d < max_dimension; d++ )
         {
             double chi_squared = this->sobolevaStatistic( shuffle_size, d, cycle_lengths );
@@ -222,13 +269,17 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
     }
 
 
+    uint64_t d = 2;
     for( auto& d_p_score : p_scores )
     {
+        if( !USE_PVALUE )
+            std::cout << this->getName() << " D = " << d << ": chi2," << d << ","; // Degrees of freedom
         for( auto score : d_p_score )
             std::cout << score << ",";
         std::cout << std::endl;
         if( USE_PVALUE )
             reportStats( d_p_score );
+        d++;
     }
 }
 
@@ -237,9 +288,11 @@ TYPED_TEST( ParameterQualityTests, TurningPointCount )
     const uint64_t shuffle_size = SAMPLE_SIZE;
     const uint64_t num_samples = NUM_SAMPLES;
 
-    thrust::host_vector<uint64_t> input( shuffle_size );
+    using Container = typename TypeParam::Shuffle::container_type;
+    Container input( shuffle_size );
     thrust::sequence( input.begin(), input.end(), 0 );
-    thrust::host_vector<uint64_t> output( shuffle_size );
+    Container output( shuffle_size );
+    thrust::host_vector<uint64_t> h_output( shuffle_size );
 
     // Distribution expected according to
     // Hombas, V. (2004). Turning Points in Random Permutations. Teaching Statistics, 26(1), 17-19.
@@ -251,10 +304,11 @@ TYPED_TEST( ParameterQualityTests, TurningPointCount )
     for( uint64_t i = 0; i < num_samples; i++ )
     {
         this->shuffle( input, output, i, shuffle_size );
+        thrust::copy( output.begin(), output.begin() + shuffle_size, h_output.begin() );
         uint64_t num_tp = 0;
         for( uint64_t j = 1; j < shuffle_size - 1; j++ )
             // Check for turning point (i.e. both neighbours bigger or smaller)
-            if( ( output[j - 1] < output[j] ) == ( output[j + 1] < output[j] ) )
+            if( ( h_output[j - 1] < h_output[j] ) == ( h_output[j + 1] < h_output[j] ) )
                 num_tp++;
 
         const double z_score = ( (double)num_tp - expected ) / stddev;
@@ -267,7 +321,9 @@ TYPED_TEST( ParameterQualityTests, TurningPointCount )
         }
         else
         {
-            std::cout << z_score << "," << std::flush;
+            if( i == 0 )
+                std::cout << this->getName() << ": normal," << expected << "," << stddev << ",";
+            std::cout << num_tp << "," << std::flush;
         }
     }
 
