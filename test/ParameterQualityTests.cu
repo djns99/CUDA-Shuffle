@@ -38,7 +38,7 @@ constexpr uint64_t FULL_NUM_SAMPLES = 10000;
 constexpr uint64_t FULL_SAMPLE_SIZE = 1e6;
 
 constexpr uint64_t NUM_SAMPLES = 10000;
-constexpr uint64_t SAMPLE_SIZE = (1ull << 24ul) + 1;
+constexpr uint64_t SAMPLE_SIZE = (1ull << 20ul) + 1;
 
 template <uint64_t NumRounds>
 using ParamFeistelBijectiveScanShuffle =
