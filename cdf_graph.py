@@ -21,12 +21,12 @@ def plot_chi2(line):
     ax.plot(x, chi2.pdf(x, df=df),
             'k-', lw=1, label='chi2 pdf')
 
-    ax.hist(nums, density=True, histtype='stepfilled', bins=len(nums), alpha=0.2)
+    ax.hist(nums, density=True, histtype='stepfilled', bins=50, alpha=0.2)
     ax.legend(loc='best', frameon=False)
     ax.set_title(name, fontsize=6, wrap=True)
     plt.savefig("figure" + str(fig_count) + ".png")
     fig_count += 1
-    plt.show(block=False)
+    plt.show()
 
 
 def plot_normal(line):
@@ -49,12 +49,12 @@ def plot_normal(line):
     plt.savefig(name[:64] + ".png")
     plt.savefig("figure" + str(fig_count) + ".png")
     fig_count += 1
-    plt.show(block=False)
+    plt.show()
 
 
 while True:
     line = sys.stdin.readline()
-    if line is None:
+    if not line:
         break
     line = line.strip()
     use_chi2 = False
@@ -63,5 +63,3 @@ while True:
         plot_chi2(line)
     elif "normal" in line:
         plot_normal(line)
-
-plt.waitforbuttonpress()
