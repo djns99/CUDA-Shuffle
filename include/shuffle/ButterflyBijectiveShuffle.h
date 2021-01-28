@@ -199,13 +199,14 @@ private:
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class ButterflyNetworkBijectiveScanShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
-    cached_allocator<true> alloc;
+    BijectiveScanFuncs::cached_allocator<true> alloc;
 
     // thrust::device_vector<KeyFlagTuple> result;
 
 public:
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
     {
+        using namespace BijectiveScanFuncs;
         assert( &in_container != &out_container );
 
         RandomGenerator random_function( seed );

@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/DartThrowing.h"
 
 uint64_t fact( uint64_t n )
 {
@@ -16,17 +16,15 @@ uint64_t fact( uint64_t n )
 
 int main( int argc, char** argv )
 {
-    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>,
-        std::vector<uint64_t>, DefaultRandomGenerator>
-        shuffle;
+    HostDartThrowing shuffle;
     DefaultRandomGenerator gen;
     const uint64_t count = 5;
     std::unordered_map<std::string, uint64_t> map;
     int iters = 1e6;
     for( int i = 0; i < iters; i++ )
     {
-        std::vector<uint64_t> in_nums( count );
-        std::vector<uint64_t> out_nums( count );
+        thrust::host_vector<uint64_t> in_nums( count );
+        thrust::host_vector<uint64_t> out_nums( count );
         std::iota( in_nums.begin(), in_nums.end(), 0 );
         shuffle( in_nums, out_nums, gen() );
 
