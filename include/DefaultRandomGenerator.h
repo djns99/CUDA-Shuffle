@@ -18,13 +18,13 @@ public:
     {
     }
 
-    DefaultRandomGenerator( DefaultRandomGenerator& other ) : random_function( other() )
+    DefaultRandomGenerator( const DefaultRandomGenerator& other ) : random_function( other() )
     {
     }
 
     DefaultRandomGenerator( DefaultRandomGenerator&& ) = default;
 
-    uint64_t operator()()
+    uint64_t operator()() const
     {
         return random_function();
     }
@@ -53,7 +53,7 @@ private:
     }
 
     // thrust::xor_combine_engine<thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U>, 0, thrust::ranlux48_base, 0> random_function;
-    std::mt19937_64 random_function;
+    mutable std::mt19937_64 random_function;
 };
 
 class GPURandomGenerator

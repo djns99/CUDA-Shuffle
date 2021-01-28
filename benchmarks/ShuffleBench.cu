@@ -2,18 +2,13 @@
 #include "GatherShuffle.h"
 #include "ScatterShuffle.h"
 #include "ThrustInclude.h"
-#include "shuffle/AndersonShuffle.h"
 #include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
-#include "shuffle/GPUSwapShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
-#include "shuffle/LubyRackoffBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
-#include "shuffle/SPNetworkBijectiveShuffle.h"
-#include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
@@ -127,7 +122,6 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
                     ParamFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<> )->Apply( argsGenerator );
 
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     HostParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds>> )
@@ -164,6 +158,8 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::omp::vector<DataType>> )->Apply( argsGenerator );
 
 
+BENCHMARK_TEMPLATE( benchmarkFunction, DartThrowing<> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, HostDartThrowing<> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, MergeShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, RaoSandeliusShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<DataType>> )->Apply( argsGenerator );

@@ -40,51 +40,54 @@ constexpr uint64_t FULL_SAMPLE_SIZE = 1e6;
 constexpr uint64_t NUM_SAMPLES = 10000;
 constexpr uint64_t SAMPLE_SIZE = ( 1ull << 20ul ) + 1;
 
-//template <uint64_t NumRounds>
-//using ParamFeistelBijectiveScanShuffle =
-//    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
-//template <uint64_t NumRounds>
-//using HostParamFeistelBijectiveScanShuffle =
-//    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
+// #define TEST_ROUND_NUMS
+#ifdef TEST_ROUND_NUMS
+
+template <uint64_t NumRounds>
+using ParamFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::device_vector<uint64_t>, DefaultRandomGenerator>;
+template <uint64_t NumRounds>
+using HostParamFeistelBijectiveScanShuffle =
+    BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, WyHashRoundFunction<NumRounds>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
 
 
-//using DeviceParameterQualityShuffleTypes = ::testing::Types<ParamFeistelBijectiveScanShuffle<1>,
-//                                                            ParamFeistelBijectiveScanShuffle<2>,
-//                                                            ParamFeistelBijectiveScanShuffle<3>,
-//                                                            ParamFeistelBijectiveScanShuffle<4>,
-//                                                            ParamFeistelBijectiveScanShuffle<5>,
-//                                                            ParamFeistelBijectiveScanShuffle<6>,
-//                                                            ParamFeistelBijectiveScanShuffle<7>,
-//                                                            ParamFeistelBijectiveScanShuffle<8>,
-//                                                            ParamFeistelBijectiveScanShuffle<9>,
-//                                                            ParamFeistelBijectiveScanShuffle<10>,
-//                                                            ParamFeistelBijectiveScanShuffle<11>,
-//                                                            ParamFeistelBijectiveScanShuffle<12>,
-//                                                            ParamFeistelBijectiveScanShuffle<13>,
-//                                                            ParamFeistelBijectiveScanShuffle<15>,
-//                                                            ParamFeistelBijectiveScanShuffle<16>
-//
-//                                                            >;
-//using HostParameterQualityShuffleTypes = ::testing::Types<HostParamFeistelBijectiveScanShuffle<1>,
-//                                                          HostParamFeistelBijectiveScanShuffle<2>,
-//                                                          HostParamFeistelBijectiveScanShuffle<3>,
-//                                                          HostParamFeistelBijectiveScanShuffle<4>,
-//                                                          HostParamFeistelBijectiveScanShuffle<5>,
-//                                                          HostParamFeistelBijectiveScanShuffle<6>,
-//                                                          HostParamFeistelBijectiveScanShuffle<7>,
-//                                                          HostParamFeistelBijectiveScanShuffle<8>,
-//                                                          HostParamFeistelBijectiveScanShuffle<9>,
-//                                                          HostParamFeistelBijectiveScanShuffle<10>,
-//                                                          HostParamFeistelBijectiveScanShuffle<11>,
-//                                                          HostParamFeistelBijectiveScanShuffle<12>,
-//                                                          HostParamFeistelBijectiveScanShuffle<13>,
-//                                                          HostParamFeistelBijectiveScanShuffle<14>,
-//                                                          HostParamFeistelBijectiveScanShuffle<15>,
-//                                                          HostParamFeistelBijectiveScanShuffle<16>
-//
-//                                                          >;
+using DeviceParameterQualityShuffleTypes = ::testing::Types<ParamFeistelBijectiveScanShuffle<1>,
+                                                            ParamFeistelBijectiveScanShuffle<2>,
+                                                            ParamFeistelBijectiveScanShuffle<3>,
+                                                            ParamFeistelBijectiveScanShuffle<4>,
+                                                            ParamFeistelBijectiveScanShuffle<5>,
+                                                            ParamFeistelBijectiveScanShuffle<6>,
+                                                            ParamFeistelBijectiveScanShuffle<7>,
+                                                            ParamFeistelBijectiveScanShuffle<8>,
+                                                            ParamFeistelBijectiveScanShuffle<9>,
+                                                            ParamFeistelBijectiveScanShuffle<10>,
+                                                            ParamFeistelBijectiveScanShuffle<11>,
+                                                            ParamFeistelBijectiveScanShuffle<12>,
+                                                            ParamFeistelBijectiveScanShuffle<13>,
+                                                            ParamFeistelBijectiveScanShuffle<15>,
+                                                            ParamFeistelBijectiveScanShuffle<16>
 
+                                                            >;
+using HostParameterQualityShuffleTypes = ::testing::Types<HostParamFeistelBijectiveScanShuffle<1>,
+                                                          HostParamFeistelBijectiveScanShuffle<2>,
+                                                          HostParamFeistelBijectiveScanShuffle<3>,
+                                                          HostParamFeistelBijectiveScanShuffle<4>,
+                                                          HostParamFeistelBijectiveScanShuffle<5>,
+                                                          HostParamFeistelBijectiveScanShuffle<6>,
+                                                          HostParamFeistelBijectiveScanShuffle<7>,
+                                                          HostParamFeistelBijectiveScanShuffle<8>,
+                                                          HostParamFeistelBijectiveScanShuffle<9>,
+                                                          HostParamFeistelBijectiveScanShuffle<10>,
+                                                          HostParamFeistelBijectiveScanShuffle<11>,
+                                                          HostParamFeistelBijectiveScanShuffle<12>,
+                                                          HostParamFeistelBijectiveScanShuffle<13>,
+                                                          HostParamFeistelBijectiveScanShuffle<14>,
+                                                          HostParamFeistelBijectiveScanShuffle<15>,
+                                                          HostParamFeistelBijectiveScanShuffle<16>
 
+                                                          >;
+
+#else
 template <uint64_t NumRounds, class RoundFunction>
 using HostParamRoundFeistelBijectiveScanShuffle =
     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<NumRounds, RoundFunction>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>;
@@ -109,6 +112,7 @@ using DeviceParameterQualityShuffleTypes =
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
                      StdShuffle<thrust::host_vector<uint64_t>>>;
+#endif
 
 TYPED_TEST_SUITE( ParameterQualityTests, DeviceParameterQualityShuffleTypes );
 TYPED_TEST_SUITE( HostParameterQualityTests, HostParameterQualityShuffleTypes );
