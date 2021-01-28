@@ -43,10 +43,9 @@ def plot_normal(line):
     ax.plot(x, norm.pdf(x, loc=mean, scale=stddev),
             'k-', lw=1, label='norm pdf')
 
-    ax.hist(nums, density=True, histtype='stepfilled', alpha=0.2)
+    ax.hist(nums, density=True, histtype='stepfilled', bins=50, alpha=0.2)
     ax.legend(loc='best', frameon=False)
     ax.set_title(name, fontsize=6, wrap=True)
-    plt.savefig(name[:64] + ".png")
     plt.savefig("figure" + str(fig_count) + ".png")
     fig_count += 1
     plt.show()
