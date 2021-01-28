@@ -118,12 +118,14 @@ protected:
         const double d_div_logn = (double)d / logn;
         const double logn_div_d = logn / (double)d;
 
-        std::vector<double> scores( d, -logn_div_d );
+        std::vector<double> scores( d, 0 );
         for( auto cycle_pair : cycle_lengths )
             scores[cycle_pair.first % d] += (double)cycle_pair.second;
-        const double sum_caj_sqrd =
-            std::transform_reduce( scores.begin(), scores.end(), 0.0, std::plus<double>{},
-                                   []( auto term ) { return term * term; } );
+        const double sum_caj_sqrd = std::transform_reduce( scores.begin(), scores.end(), 0.0,
+                                                           std::plus<double>{}, [=]( auto term ) {
+                                                               term -= logn_div_d;
+                                                               return term * term;
+                                                           } );
 
         return d_div_logn * sum_caj_sqrd;
     }
