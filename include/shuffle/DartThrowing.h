@@ -62,7 +62,7 @@ struct WritePermutationFunctor
         return 0; // Discarded
     }
 };
-}
+} // namespace DartThrowingScanFuncs
 
 template <class ContainerType = thrust::device_vector<uint64_t>, uint64_t alpha_numerator = 4, uint64_t alpha_denom = 1>
 class DartThrowing : public Shuffle<ContainerType, GPURandomGenerator>
@@ -145,7 +145,6 @@ public:
 
     cached_allocator alloc;
     thrust::host_vector<uint64_t> temp_storage;
-    uint64_t storage_size = 0;
 
     void dartThrowingHost( thrust::host_vector<uint64_t>& indices,
                            uint64_t start,
@@ -207,8 +206,8 @@ public:
         };
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
-        thrust::inclusive_scan( thrust::cpp::par( alloc ), tuple_it, tuple_it + num_targets,
-                                output_it, ScanOp() );
+        thrust::inclusive_scan( thrust::tbb::par( alloc ), tuple_it,
+                                tuple_it + num_targets, output_it, ScanOp() );
     }
 
     bool supportsInPlace() const override

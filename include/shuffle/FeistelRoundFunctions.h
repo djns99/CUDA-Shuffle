@@ -138,9 +138,9 @@ struct DRBGCombiner
         // Otherwise we are fully relying on the randomness of hash combine
         // Note this also ensures Taus88 doesnt get seed of 0
         uint64_t seed = hashCombine( value, key[round] );
-        DRBG1 drbg1{ seed };
+        DRBG1 drbg1{ typename DRBG1::result_type( seed ) };
         // Invert seed so we can use the same generator twice
-        DRBG2 drbg2{ ~seed };
+        DRBG2 drbg2{ typename DRBG2::result_type( ~seed ) };
         drbg1.discard( discard1 );
         drbg2.discard( discard2 );
 
@@ -157,22 +157,22 @@ struct DRBGCombiner
     uint64_t key[num_rounds];
 };
 
-template <uint64_t num_rounds>
-using Taus88RanluxRoundFunction = DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::ranlux48, 1>;
-template <uint64_t num_rounds>
+template <uint64_t num_rounds, bool fast = false>
+using Taus88RanluxRoundFunction = DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::ranlux48, 1, fast>;
+template <uint64_t num_rounds, bool fast = false>
 using Taus88LCGRoundFunction =
-    DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::default_random_engine, 1>;
-template <uint64_t num_rounds>
+    DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::default_random_engine, 1, fast>;
+template <uint64_t num_rounds, bool fast = false>
 using RanluxLCGRoundFunction =
-    DRBGCombiner<num_rounds, thrust::ranlux48, 1, thrust::default_random_engine, 1>;
+    DRBGCombiner<num_rounds, thrust::ranlux48, 1, thrust::default_random_engine, 1, fast>;
 
-template <uint64_t num_rounds>
-using DualTaus88RoundFunction = DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::taus88, 1>;
-template <uint64_t num_rounds>
+template <uint64_t num_rounds, bool fast = false>
+using DualTaus88RoundFunction = DRBGCombiner<num_rounds, thrust::taus88, 1, thrust::taus88, 1, fast>;
+template <uint64_t num_rounds, bool fast = false>
 using DualLCGRoundFunction =
-    DRBGCombiner<num_rounds, thrust::default_random_engine, 1, thrust::default_random_engine, 1>;
-template <uint64_t num_rounds>
-using DualRanluxRoundFunction = DRBGCombiner<num_rounds, thrust::ranlux48, 1, thrust::ranlux48, 1>;
+    DRBGCombiner<num_rounds, thrust::default_random_engine, 1, thrust::default_random_engine, 1, fast>;
+template <uint64_t num_rounds, bool fast = false>
+using DualRanluxRoundFunction = DRBGCombiner<num_rounds, thrust::ranlux48, 1, thrust::ranlux48, 1, fast>;
 
 template <uint64_t num_rounds>
 struct RC5RoundFunction

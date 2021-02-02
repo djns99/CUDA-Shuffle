@@ -3,6 +3,8 @@
 #include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
 #include <cuda.h>
+#include <execution>
+#include <numeric>
 
 namespace BijectiveScanFuncs
 {
@@ -92,7 +94,7 @@ struct MakeTupleFunctor
     }
 };
 
-}
+} // namespace BijectiveScanFuncs
 
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerator>
@@ -100,6 +102,7 @@ class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerat
     constexpr static bool device =
         std::is_same<ContainerType, thrust::device_vector<typename ContainerType::value_type, typename ContainerType::allocator_type>>::value;
     BijectiveScanFuncs::cached_allocator<device> alloc;
+    thrust::host_vector<BijectiveScanFuncs::KeyFlagTuple> tuple;
 
 public:
     void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
@@ -114,18 +117,31 @@ public:
 
         thrust::counting_iterator<uint64_t> indices( 0 );
         size_t m = num;
-        thrust::transform_iterator<MakeTupleFunctor<BijectiveFunction>, decltype( indices ), KeyFlagTuple> tuple_it(
-            indices, MakeTupleFunctor<BijectiveFunction>( m, mapping_function ) );
+
         WritePermutationFunctor<decltype( in_container.begin() ), decltype( out_container.begin() )> write_functor{
             m, in_container.begin(), out_container.begin()
         };
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
         if( device )
+        {
+            thrust::transform_iterator<MakeTupleFunctor<BijectiveFunction>, decltype( indices ), KeyFlagTuple> tuple_it(
+                indices, MakeTupleFunctor<BijectiveFunction>( m, mapping_function ) );
             thrust::inclusive_scan( thrust::cuda::par( alloc ), tuple_it, tuple_it + capacity,
                                     output_it, ScanOp() );
+        }
         else
-            thrust::inclusive_scan( thrust::seq( alloc ), tuple_it, tuple_it + capacity, output_it, ScanOp() );
+        {
+            if( tuple.size() < capacity )
+            {
+                tuple.resize( capacity );
+            }
+            // Need to transform exactly once since computation is the bottleneck
+            thrust::transform( thrust::tbb::par, indices, indices + capacity, tuple.begin(),
+                               MakeTupleFunctor<BijectiveFunction>( m, mapping_function ) );
+            thrust::inclusive_scan( thrust::tbb::par( alloc ), tuple.begin(),
+                                    tuple.begin() + capacity, output_it, ScanOp() );
+        }
     }
 
     bool supportsInPlace() const override

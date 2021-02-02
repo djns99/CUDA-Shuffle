@@ -16,4 +16,8 @@
 #include <thrust/shuffle.h>
 
 #include <thrust/system/cpp/vector.h>
+#include <thrust/system/cpp/execution_policy.h>
 #include <thrust/system/omp/vector.h>
+#include <thrust/system/omp/execution_policy.h>
+#include <thrust/system/tbb/vector.h>
+#include <thrust/system/tbb/execution_policy.h>
