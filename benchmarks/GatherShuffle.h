@@ -6,7 +6,7 @@
 
 // Reads from random addresses
 // Doesn't actually shuffle, only used for measurement purposes
-template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class GatherShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:

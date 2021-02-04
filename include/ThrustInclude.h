@@ -21,3 +21,4 @@
 #include <thrust/system/omp/execution_policy.h>
 #include <thrust/system/tbb/vector.h>
 #include <thrust/system/tbb/execution_policy.h>
+#include <thrust/system/tbb/detail/transform_scan.h>

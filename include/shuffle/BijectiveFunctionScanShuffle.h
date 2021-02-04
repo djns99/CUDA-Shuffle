@@ -139,8 +139,9 @@ public:
             // Need to transform exactly once since computation is the bottleneck
             thrust::transform( thrust::tbb::par, indices, indices + capacity, tuple.begin(),
                                MakeTupleFunctor<BijectiveFunction>( m, mapping_function ) );
-            thrust::inclusive_scan( thrust::tbb::par( alloc ), tuple.begin(),
-                                    tuple.begin() + capacity, output_it, ScanOp() );
+            // Explicitly call TBB scan to ensure parallel operation
+            thrust::system::tbb::detail::inclusive_scan( thrust::tbb::par, tuple.begin(),
+                                                         tuple.begin() + capacity, output_it, ScanOp() );
         }
     }
 

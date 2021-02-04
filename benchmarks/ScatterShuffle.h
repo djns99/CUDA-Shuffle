@@ -5,7 +5,7 @@
 
 // Writes into random addresses
 // Doesn't actually shuffle, only used for measurement purposes
-template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class ScatterShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 public:
