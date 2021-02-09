@@ -120,12 +120,14 @@ protected:
 
         std::vector<double> scores( d, 0 );
         for( auto cycle_pair : cycle_lengths )
-            scores[cycle_pair.first % d] += (double)cycle_pair.second;
-        const double sum_caj_sqrd = std::transform_reduce( scores.begin(), scores.end(), 0.0,
-                                                           std::plus<double>{}, [=]( auto term ) {
-                                                               term -= logn_div_d;
-                                                               return term * term;
-                                                           } );
+            if( cycle_pair.first > d )
+                scores[cycle_pair.first % d] += (double)cycle_pair.second;
+        double sum_caj_sqrd = 0;
+        for( auto score : scores )
+        {
+            const double term = score - logn_div_d;
+            sum_caj_sqrd += term * term;
+        }
 
         return d_div_logn * sum_caj_sqrd;
     }
