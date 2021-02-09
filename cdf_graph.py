@@ -53,7 +53,7 @@ def plot_normal(line):
 
 while True:
     line = sys.stdin.readline()
-    if not line:
+    if not line or line is None:
         break
     line = line.strip()
     use_chi2 = False

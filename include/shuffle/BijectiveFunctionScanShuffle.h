@@ -123,7 +123,7 @@ public:
         };
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
-        if( device )
+        if constexpr( device )
         {
             thrust::transform_iterator<MakeTupleFunctor<BijectiveFunction>, decltype( indices ), KeyFlagTuple> tuple_it(
                 indices, MakeTupleFunctor<BijectiveFunction>( m, mapping_function ) );
