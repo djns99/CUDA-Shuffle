@@ -43,7 +43,7 @@ constexpr uint64_t SOBOLEVA_SAMPLE_SIZE = ( 1ull << 14ul ) + 1;
 constexpr uint64_t NUM_SAMPLES = 10000;
 constexpr uint64_t SAMPLE_SIZE = ( 1ull << 20ul ) + 1;
 
-#define TEST_ROUND_NUMS
+//#define TEST_ROUND_NUMS
 #ifdef TEST_ROUND_NUMS
 
 template <uint64_t NumRounds>
