@@ -37,8 +37,8 @@ constexpr bool USE_PVALUE = false;
 constexpr uint64_t FULL_NUM_SAMPLES = 10000;
 constexpr uint64_t FULL_SAMPLE_SIZE = 1e6;
 
-constexpr uint64_t SOBOLEVA_NUM_SAMPLES = 1000000;
-constexpr uint64_t SOBOLEVA_SAMPLE_SIZE = ( 1ull << 14ul ) + 1;
+constexpr uint64_t SOBOLEVA_NUM_SAMPLES = 1e7;
+constexpr uint64_t SOBOLEVA_SAMPLE_SIZE = ( 1ull << 10ul ) + 1;
 
 constexpr uint64_t NUM_SAMPLES = 10000;
 constexpr uint64_t SAMPLE_SIZE = ( 1ull << 20ul ) + 1;
@@ -252,7 +252,7 @@ TYPED_TEST( ParameterQualityTests, PermutationLength )
 {
     const uint64_t shuffle_size = SOBOLEVA_SAMPLE_SIZE;
     const uint64_t num_samples = SOBOLEVA_NUM_SAMPLES;
-    const uint64_t max_dimension = std::min( (uint64_t)5ull, shuffle_size );
+    const uint64_t max_dimension = std::min( (uint64_t)6ull, shuffle_size );
 
     using Container = typename TypeParam::Shuffle::container_type;
     Container input( shuffle_size );

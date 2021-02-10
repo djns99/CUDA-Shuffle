@@ -120,8 +120,7 @@ protected:
 
         std::vector<double> scores( d, 0 );
         for( auto cycle_pair : cycle_lengths )
-            if( cycle_pair.first > d )
-                scores[cycle_pair.first % d] += (double)cycle_pair.second;
+            scores[cycle_pair.first % d] += (double)cycle_pair.second;
         double sum_caj_sqrd = 0;
         for( auto score : scores )
         {
