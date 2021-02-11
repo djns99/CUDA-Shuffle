@@ -179,6 +179,11 @@ public:
         }
         std::fill( temp_storage.begin(), temp_storage.begin() + num_targets, UINT64_MAX );
 
+#pragma omp parallel for
+        for( uint64_t i = 0; i < num_targets; i += 32 )
+            std::fill( temp_storage.begin() + i, temp_storage.begin() + std::min( i + 32, num_targets ), UINT64_MAX );
+
+
         uint64_t num_threads = std::thread::hardware_concurrency();
         DefaultRandomGenerator seeder( seed );
         std::vector<DefaultRandomGenerator> generators( num_threads, seeder );
@@ -206,8 +211,8 @@ public:
         };
         auto output_it =
             thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
-        thrust::inclusive_scan( thrust::tbb::par( alloc ), tuple_it,
-                                tuple_it + num_targets, output_it, ScanOp() );
+        thrust::inclusive_scan( thrust::tbb::par( alloc ), tuple_it, tuple_it + num_targets,
+                                output_it, ScanOp() );
     }
 
     bool supportsInPlace() const override
