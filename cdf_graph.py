@@ -5,12 +5,15 @@ import numpy as np
 
 fig_count = 0
 
+NUM_BINS=100
+
 def split_name(line):
     split = line.rsplit(':', 1)
     return split[0], split[1]
 
 def plot_chi2(line):
     global fig_count
+    global NUM_BINS
     name, line = split_name(line)
     split_line = line.split(',')
     df = int(split_line[1])
@@ -21,7 +24,7 @@ def plot_chi2(line):
     ax.plot(x, chi2.pdf(x, df=df),
             'k-', lw=1, label='chi2 pdf')
 
-    ax.hist(nums, density=True, histtype='stepfilled', bins=50, alpha=0.2)
+    ax.hist(nums, density=True, histtype='stepfilled', bins=NUM_BINS, alpha=0.2)
     ax.legend(loc='best', frameon=False)
     ax.set_title(name, fontsize=6, wrap=True)
     plt.savefig("figure" + str(fig_count) + ".png")
@@ -31,6 +34,7 @@ def plot_chi2(line):
 
 def plot_normal(line):
     global fig_count
+    global NUM_BINS
     name, line = split_name(line)
     split_line = line.split(',')
     mean = float(split_line[1])
@@ -43,7 +47,7 @@ def plot_normal(line):
     ax.plot(x, norm.pdf(x, loc=mean, scale=stddev),
             'k-', lw=1, label='norm pdf')
 
-    ax.hist(nums, density=True, histtype='stepfilled', bins=50, alpha=0.2)
+    ax.hist(nums, density=True, histtype='stepfilled', bins=NUM_BINS, alpha=0.2)
     ax.legend(loc='best', frameon=False)
     ax.set_title(name, fontsize=6, wrap=True)
     plt.savefig("figure" + str(fig_count) + ".png")

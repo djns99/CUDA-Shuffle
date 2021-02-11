@@ -9,8 +9,8 @@ template <class ContainerType = std::vector<uint64_t>, class RandomGenerator = D
 class RaoSandeliusShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
 private:
-    unsigned long cutoff = 0x10000;
-    unsigned long cutoff2 = 0x100000;
+    unsigned long cutoff = 0x20000;
+    unsigned long cutoff2 = 0x20000;
 
     struct Flipper
     {
