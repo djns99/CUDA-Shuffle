@@ -116,7 +116,7 @@ using DeviceParameterQualityShuffleTypes =
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
-                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>>>;
+                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>>,
                      StdShuffle<thrust::host_vector<uint64_t>>>;
 #endif
 

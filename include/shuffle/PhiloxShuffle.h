@@ -7,7 +7,7 @@ __host__ __device__ uint32_t mulhilo(uint64_t a, uint32_t b, uint32_t &hip) {
   return uint32_t(product);
 }
 
-template <uint64_t num_rounds = 16> class PhiloxBijectiveFunction {
+template <uint64_t num_rounds = 24> class PhiloxBijectiveFunction {
 public:
   template <class RandomGenerator>
   void init(uint64_t capacity, RandomGenerator &random_function) {
@@ -55,7 +55,7 @@ private:
       capacity >>= 1;
     }
 
-    return std::max(i, uint64_t(2));
+    return std::max(i, uint64_t(4));
   }
 
   uint64_t right_side_bits;
@@ -67,7 +67,17 @@ private:
 };
 
 template <class ContainerType = thrust::device_vector<uint64_t>,
-          class RandomGenerator = DefaultRandomGenerator>
+          class RandomGenerator = DefaultRandomGenerator, uint64_t num_rounds=24>
 using PhiloxBijectiveScanShuffle =
-    BijectiveFunctionScanShuffle<PhiloxBijectiveFunction<>, ContainerType,
+    BijectiveFunctionScanShuffle<PhiloxBijectiveFunction<num_rounds>, ContainerType,
+                                 RandomGenerator>;
+template <class ContainerType = thrust::device_vector<uint64_t>,
+          class RandomGenerator = DefaultRandomGenerator>
+using BasicPhiloxBijectiveScanShuffle =
+    BasicBijectiveFunctionScanShuffle<PhiloxBijectiveFunction<>, ContainerType,
+                                 RandomGenerator>;
+template <class ContainerType = thrust::device_vector<uint64_t>,
+          class RandomGenerator = DefaultRandomGenerator>
+using TwoPassPhiloxBijectiveScanShuffle =
+    MGPUBijectiveFunctionScanShuffle<PhiloxBijectiveFunction<>, ContainerType,
                                  RandomGenerator>;
