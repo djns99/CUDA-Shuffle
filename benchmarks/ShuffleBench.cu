@@ -147,13 +147,13 @@ BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_ve
 #endif
 
 BENCHMARK_TEMPLATE( benchmarkFunction,
-                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds, fast_generator>> )
+                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88RanluxRoundFunction<target_num_rounds, true>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
-                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds, fast_generator>> )
+                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds, true>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
-                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds, fast_generator>> )
+                    TBBParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds, true>> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     TBBParamFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>> )
