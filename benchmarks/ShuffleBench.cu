@@ -7,6 +7,7 @@
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/MergeShuffle.h"
+#include "shuffle/PhiloxShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
 #include "shuffle/StdShuffle.h"
@@ -124,6 +125,10 @@ BENCHMARK_TEMPLATE( benchmarkFunction,
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     ParamFeistelBijectiveScanShuffle<target_num_rounds, Taus88LCGRoundFunction<target_num_rounds, true>> )
+    ->Apply( argsGenerator );
+
+BENCHMARK_TEMPLATE( benchmarkFunction,
+                    PhiloxBijectiveScanShuffle<> )
     ->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction,
                     ParamFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds, true>> )
