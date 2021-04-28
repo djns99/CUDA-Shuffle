@@ -111,7 +111,7 @@ def get_rng_name(name, prefix):
 
 
 def convert_name(name):
-    single_names = ["StdShuffle", "MergeShuffle", "RaoSandeliusShuffle"]
+    single_names = ["StdShuffle", "MergeShuffle", "RaoSandeliusShuffle", "Philox"]
     for part in single_names:
         if "benchmarkFunction<" + part in name:
             return part

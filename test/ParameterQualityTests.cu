@@ -1,6 +1,7 @@
 #include "PrefixTree.h"
 #include "RandomnessTest.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/PhiloxShuffle.h"
 #include <cxxabi.h>
 #include <gtest/gtest.h>
 #include <thread>
@@ -43,7 +44,7 @@ constexpr uint64_t SOBOLEVA_SAMPLE_SIZE = ( 1ull << 10ul ) + 1;
 constexpr uint64_t NUM_SAMPLES = 10000;
 constexpr uint64_t SAMPLE_SIZE = ( 1ull << 20ul ) + 1;
 
-#define TEST_ROUND_NUMS
+//#define TEST_ROUND_NUMS
 #ifdef TEST_ROUND_NUMS
 
 template <uint64_t NumRounds>
@@ -115,6 +116,7 @@ using DeviceParameterQualityShuffleTypes =
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RanluxLCGRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, WyHashRoundFunction<target_num_rounds>>,
                      ParamRoundFeistelBijectiveScanShuffle<target_num_rounds, RC5RoundFunction<target_num_rounds>>,
+                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>>>;
                      StdShuffle<thrust::host_vector<uint64_t>>>;
 #endif
 
