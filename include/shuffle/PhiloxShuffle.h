@@ -55,7 +55,7 @@ private:
       capacity >>= 1;
     }
 
-    return std::max(i, uint64_t(1));
+    return std::max(i, uint64_t(2));
   }
 
   uint64_t right_side_bits;
