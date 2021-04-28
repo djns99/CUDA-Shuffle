@@ -8,6 +8,7 @@
 #include "shuffle/FeistelBijectiveShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
+#include "shuffle/PhiloxShuffle.h"
 #include "shuffle/MergeShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
@@ -143,5 +144,5 @@ template <typename ShuffleFunction>
 constexpr double RandomnessTests<ShuffleFunction>::p_score_significance;
 
 using ShuffleTypes =
-    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, FeistelBijectiveScanShuffle<>, ThrustShuffle<> /*, NoOpBijectiveShuffle<>*/>;
+    ::testing::Types<StdShuffle<>, MergeShuffle<>, RaoSandeliusShuffle<>, FeistelBijectiveScanShuffle<>, /*ThrustShuffle<>,*/ PhiloxBijectiveScanShuffle<>  /*, NoOpBijectiveShuffle<>*/>;
 TYPED_TEST_SUITE( RandomnessTests, ShuffleTypes );

@@ -5,6 +5,7 @@
 #include "shuffle/CzumajShuffle.h"
 #include "shuffle/DartThrowing.h"
 #include "shuffle/FeistelBijectiveShuffle.h"
+#include "shuffle/PhiloxShuffle.h"
 #include "shuffle/FisherYatesShuffle.h"
 #include "shuffle/LCGBijectiveShuffle.h"
 #include "shuffle/LubyRackoffBijectiveShuffle.h"
@@ -96,7 +97,7 @@ using ShuffleTypes = ::testing::Types<// StdShuffle<>,
                      // LubyRackoffBijectiveSortShuffle<>,
                      // LubyRackoffBijectiveScanShuffle<>,
                      DartThrowing<>,
-                     HostDartThrowing<>//,
+                     HostDartThrowing<>,
                      //FisherYatesShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      //StdShuffle<std::vector<uint64_t>, ConstantGenerator>,
                      //LCGBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
@@ -114,7 +115,8 @@ using ShuffleTypes = ::testing::Types<// StdShuffle<>,
                      //NoOpBijectiveShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      //NoOpBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      //NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
-                     //BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>
+                     BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>,
+                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>, DefaultRandomGenerator>
 
     >;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );

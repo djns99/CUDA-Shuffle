@@ -3,7 +3,6 @@
 #include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
 #include <cuda.h>
-#include <execution>
 #include <numeric>
 
 namespace BijectiveScanFuncs
