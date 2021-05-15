@@ -242,7 +242,7 @@ void RunPhilox( size_t n, size_t num_samples, double lambda )
 
     double mmd =
         MMDSquared<PhiloxBijectiveScanShuffle<std::vector<int>, DefaultRandomGenerator, end_rounds>>( n, num_samples, lambda );
-    printf( "Philox,%f,%d,%d,%d\n", mmd, int( num_samples ), int( n ), int( end_rounds ) );
+    printf( "VarPhilox,%f,%d,%d,%d\n", mmd, int( num_samples ), int( n ), int( end_rounds ) );
 }
 
 int main( int argc, char** argv )

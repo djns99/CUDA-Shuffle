@@ -38,7 +38,7 @@ void RunPhilox( size_t n, size_t num_samples )
     std::iota( in.begin(), in.end(), 0 );
 
     std::map<std::vector<int>, int> count;
-    printf( "Philox," );
+    printf( "VarPhilox," );
     PhiloxBijectiveScanShuffle<std::vector<int>, DefaultRandomGenerator, end_rounds> alg;
     for( auto i = 0ull; i < num_samples; i++ )
     {
