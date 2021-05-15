@@ -32,9 +32,7 @@ def get_data_as_dict():
 
         for mean in means:
             split_name = mean["run_name"].split("/")
-            run_name = split_name[0]
-            if not int(split_name[2]):
-                continue
+            run_name = split_name[0]+split_name[2]
             size = 2 ** int(split_name[1]) + int(split_name[2])
             if run_name not in results:
                 results[run_name] = {}
@@ -51,7 +49,7 @@ def plot_algorithms(name, results, key, colour_map):
         test_res = OrderedDict(sorted(filtered_results[test_name].items()))
         df[test_name] = test_res.values()
         # Check all columns have the same sizes
-        assert np.array_equal(index, sorted(test_res.keys())), (index, test_res.keys())
+        #assert np.array_equal(index, sorted(test_res.keys())), (index, test_res.keys())
 
     colours = [colour_map[k] for k in key.keys()]
     sns.set_palette(colours)
@@ -89,30 +87,30 @@ def main():
     results = get_data_as_dict()
     # print(json.dumps(results, indent=4, sort_keys=True))
     experiments = {"GPUShuffle": {"benchmarkScatterGather<GatherShuffle<thrust::device_vector"
-                                  "<DataType>>>": "Gather",
-                                  "benchmarkFunction<PhiloxBijectiveScanShuffle<>>": "Philox",
-                                  "benchmarkFunction<LCGBijectiveScanShuffle<thrust::device_vector<DataType>>>": "LCG",
+                                  "<DataType>>>1": "Gather",
+                                  "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "VarPhilox",
+                                  "benchmarkFunction<LCGBijectiveScanShuffle<thrust::device_vector<DataType>>>1": "LCG",
                                   "benchmarkFunction<DartThrowing<thrust::device_vector<DataType"
-                                  ">>>": "DartThrowing",
+                                  ">>>1": "DartThrowing",
                                   "benchmarkFunction<SortShuffle<thrust::device_vector<DataType"
-                                  ">>>": "SortShuffle"},
+                                  ">>>1": "SortShuffle"},
                    "BijectiveComparison": {
-                       "benchmarkScatterGather<GatherShuffle<thrust::device_vector<DataType>>>":
+                       "benchmarkScatterGather<GatherShuffle<thrust::device_vector<DataType>>>1":
                            "Gather",
-                       "benchmarkFunction<BasicPhiloxBijectiveScanShuffle<>>": "Bijective0",
-                       "benchmarkFunction<TwoPassPhiloxBijectiveScanShuffle<>>": "Bijective1",
-                       "benchmarkFunction<PhiloxBijectiveScanShuffle<>>": "Bijective2"},
+                       "benchmarkFunction<BasicPhiloxBijectiveScanShuffle<>>1": "Bijective0",
+                       "benchmarkFunction<TwoPassPhiloxBijectiveScanShuffle<>>1": "Bijective1",
+                       "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "Bijective2","benchmarkFunction<PhiloxBijectiveScanShuffle<>>0": "Bijective2(n=m)"},
                    "CPUShuffle": {
-                       "benchmarkScatterGather<GatherShuffle<thrust::host_vector<DataType>>>":
+                       "benchmarkScatterGather<GatherShuffle<thrust::host_vector<DataType>>>1":
                            "Gather",
                        "benchmarkFunction<PhiloxBijectiveScanShuffle<thrust::tbb::vector<DataType"
-                       ">>>": "Philox",
-                       "benchmarkFunction<HostDartThrowing<std::vector<DataType>>>"
+                       ">>>1": "VarPhilox",
+                       "benchmarkFunction<HostDartThrowing<std::vector<DataType>>>1"
                        : "DartThrowing",
-                       "benchmarkFunction<StdShuffle<std::vector<DataType>>>": "std::shuffle",
-                       "benchmarkFunction<RaoSandeliusShuffle<std::vector<DataType>>>": "RS",
-                       "benchmarkFunction<MergeShuffle<std::vector<DataType>>>": "MergeShuffle",
-                       "benchmarkFunction<SortShuffle<thrust::host_vector<DataType>>>":
+                       "benchmarkFunction<StdShuffle<std::vector<DataType>>>1": "std::shuffle",
+                       "benchmarkFunction<RaoSandeliusShuffle<std::vector<DataType>>>1": "RS",
+                       "benchmarkFunction<MergeShuffle<std::vector<DataType>>>1": "MergeShuffle",
+                       "benchmarkFunction<SortShuffle<thrust::host_vector<DataType>>>1":
                            "SortShuffle"}}
 
     unique_algorithms = {x for v in experiments.values() for x in v.keys()}
