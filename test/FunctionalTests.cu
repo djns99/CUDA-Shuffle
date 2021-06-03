@@ -116,7 +116,12 @@ using ShuffleTypes = ::testing::Types<// StdShuffle<>,
                      //NoOpBijectiveSortShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      //NoOpBijectiveScanShuffle<thrust::device_vector<uint64_t>, ConstantGenerator>,
                      BijectiveFunctionScanShuffle<FeistelBijectiveFunction<FEISTEL_DEFAULT_NUM_ROUNDS, RC5RoundFunction<FEISTEL_DEFAULT_NUM_ROUNDS>>, thrust::host_vector<uint64_t>, DefaultRandomGenerator>,
-                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>, DefaultRandomGenerator>
+                     PhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>, DefaultRandomGenerator>,
+                     BasicPhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>, DefaultRandomGenerator>,
+                     TwoPassPhiloxBijectiveScanShuffle<thrust::device_vector<uint64_t>, DefaultRandomGenerator>,
+                     SortShuffle<thrust::device_vector<uint64_t>>,
+                     SortShuffle<thrust::host_vector<uint64_t>>,
+//                     SortShuffle<>
 
     >;
 TYPED_TEST_SUITE( FunctionalTests, ShuffleTypes );
