@@ -113,13 +113,14 @@ def main():
                        "benchmarkFunction<SortShuffle<thrust::host_vector<DataType>>>1":
                            "SortShuffle"}}
 
-    unique_algorithms = {x for v in experiments.values() for x in v.keys()}
-    rs=np.random.RandomState(234)
+    unique_algorithms = [x for v in experiments.values() for x in v.keys()]
+    rs=np.random.RandomState(235)
     palette=sns.color_palette("tab20", n_colors=len(unique_algorithms))
     rs.shuffle(palette
                )
-    colours = {alg: col for alg, col in
-               zip(unique_algorithms, palette)}
+    colours = OrderedDict((alg, col) for (alg, col) in
+               zip(unique_algorithms, palette))
+    print(colours)
     sns.set_style("whitegrid")
     for name, keys in experiments.items():
         plot_algorithms(name, results, keys, colours)
