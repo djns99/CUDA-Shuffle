@@ -1,7 +1,7 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
-#include "shuffle/Shuffle.h"
 #include "ThrustInclude.h"
+#include "shuffle/Shuffle.h"
 #include <vector>
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>

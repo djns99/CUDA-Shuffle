@@ -52,7 +52,6 @@ private:
         return seed;
     }
 
-    // thrust::xor_combine_engine<thrust::linear_congruential_engine<uint64_t, 6364136223846793005U, 1442695040888963407U, 0U>, 0, thrust::ranlux48_base, 0> random_function;
     mutable std::mt19937_64 random_function;
 };
 

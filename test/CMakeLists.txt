@@ -13,8 +13,5 @@ function(create_test test_name)
     add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction(create_test)
 
-create_test(FunctionalTests)
-create_exe(ParameterQualityTests)
 create_exe(ChiSquared)
 create_exe(MMD)
-add_subdirectory(randomness)
