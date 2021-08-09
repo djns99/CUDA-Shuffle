@@ -125,8 +125,7 @@ BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::host_vector<DataType>
 
 #ifndef HOST_BENCH
 BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
-#else
-BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::host_vector<DataType>> )->Apply( argsGenerator );
 #endif
+BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::host_vector<DataType>> )->Apply( argsGenerator );
 
 BENCHMARK_MAIN();
