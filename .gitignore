@@ -4,3 +4,5 @@ cmake-build-*
 /out/build/x64-Debug
 build*
 .vscode
+.cache
+*.png
