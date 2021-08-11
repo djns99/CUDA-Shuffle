@@ -1,7 +1,7 @@
 #pragma once
 #include "DefaultRandomGenerator.h"
-#include "shuffle/Shuffle.h"
 #include "ThrustInclude.h"
+#include "shuffle/Shuffle.h"
 
 
 // Reads from random addresses

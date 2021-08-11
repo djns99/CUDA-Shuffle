@@ -7,10 +7,10 @@ import seaborn as sns
 import pandas as pd
 from collections import OrderedDict
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 sns.set()
-matplotlib.rcParams['text.usetex'] = True
-plt.rc('font', family='serif')
+matplotlib.rcParams["text.usetex"] = True
+plt.rc("font", family="serif")
 
 
 def is_mean(entry):
@@ -32,7 +32,7 @@ def get_data_as_dict():
 
         for mean in means:
             split_name = mean["run_name"].split("/")
-            run_name = split_name[0]+split_name[2]
+            run_name = split_name[0] + split_name[2]
             size = 2 ** int(split_name[1]) + int(split_name[2])
             if run_name not in results:
                 results[run_name] = {}
@@ -48,20 +48,9 @@ def plot_algorithms(name, results, key, colour_map):
     for test_name in filtered_results.keys():
         test_res = OrderedDict(sorted(filtered_results[test_name].items()))
         df[test_name] = test_res.values()
-        # Check all columns have the same sizes
-        #assert np.array_equal(index, sorted(test_res.keys())), (index, test_res.keys())
 
     colours = [colour_map[k] for k in key.keys()]
     sns.set_palette(colours)
-    # TODO Tune this
-    # dash_styles = ["",
-    #                (4, 1.5),
-    #                (1, 1),
-    #                (3, 1, 1.5, 1),
-    #                (5, 1, 1, 1),
-    #                (5, 1, 2, 1, 2, 1),
-    #                (2, 2, 3, 1.5),
-    #                (1, 2.5, 3, 1.2)]
     plt.figure(figsize=(6, 4.5))
     sns.lineplot(data=df, markers=True)
     plt.xlabel("Input Size")
@@ -70,56 +59,57 @@ def plot_algorithms(name, results, key, colour_map):
     plt.yscale("log")
     plt.legend()
     ax = plt.subplot(111)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    plt.savefig(name + ".png", orientation='landscape', bbox_inches="tight", dpi=1000)
-    # Format float strings
-    # df = df.applymap(
-    #     lambda x: np.format_float_positional(x, precision=4, fractional=False, trim="-"))
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    plt.savefig(name + ".png", orientation="landscape", bbox_inches="tight", dpi=1000)
 
     df.index = ["$2^{" + str(int(np.log2(m))) + "} + 1$" for m in df.index]
     df.index.name = "Input size"
 
-    print(df.to_latex(float_format="%.2f", column_format="r" * (len(df) + 1), escape=False))
+    print(
+        df.to_latex(
+            float_format="%.2f", column_format="r" * (len(df) + 1), escape=False
+        )
+    )
 
 
 def main():
     results = get_data_as_dict()
-    # print(json.dumps(results, indent=4, sort_keys=True))
-    experiments = {"GPUShuffle": {"benchmarkScatterGather<GatherShuffle<thrust::device_vector"
-                                  "<DataType>>>1": "Gather",
-                                  "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "VarPhilox",
-                                  "benchmarkFunction<LCGBijectiveScanShuffle<thrust::device_vector<DataType>>>1": "LCG",
-                                  "benchmarkFunction<DartThrowing<thrust::device_vector<DataType"
-                                  ">>>1": "DartThrowing",
-                                  "benchmarkFunction<SortShuffle<thrust::device_vector<DataType"
-                                  ">>>1": "SortShuffle"},
-                   "BijectiveComparison": {
-                       "benchmarkScatterGather<GatherShuffle<thrust::device_vector<DataType>>>1":
-                           "Gather",
-                       "benchmarkFunction<BasicPhiloxBijectiveScanShuffle<>>1": "Bijective0",
-                       "benchmarkFunction<TwoPassPhiloxBijectiveScanShuffle<>>1": "Bijective1",
-                       "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "Bijective2","benchmarkFunction<PhiloxBijectiveScanShuffle<>>0": "Bijective2(n=m)"},
-                   "CPUShuffle": {
-                       "benchmarkScatterGather<GatherShuffle<thrust::host_vector<DataType>>>1":
-                           "Gather",
-                       "benchmarkFunction<PhiloxBijectiveScanShuffle<thrust::tbb::vector<DataType"
-                       ">>>1": "VarPhilox",
-                       "benchmarkFunction<HostDartThrowing<std::vector<DataType>>>1"
-                       : "DartThrowing",
-                       "benchmarkFunction<StdShuffle<std::vector<DataType>>>1": "std::shuffle",
-                       "benchmarkFunction<RaoSandeliusShuffle<std::vector<DataType>>>1": "RS",
-                       "benchmarkFunction<MergeShuffle<std::vector<DataType>>>1": "MergeShuffle",
-                       "benchmarkFunction<SortShuffle<thrust::host_vector<DataType>>>1":
-                           "SortShuffle"}}
+    experiments = {
+        "GPUShuffle": {
+            "benchmarkScatterGather<GatherShuffle<thrust::device_vector"
+            "<DataType>>>1": "Gather",
+            "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "VarPhilox",
+            "benchmarkFunction<LCGBijectiveScanShuffle<thrust::device_vector<DataType>>>1": "LCG",
+            "benchmarkFunction<DartThrowing<thrust::device_vector<DataType"
+            ">>>1": "DartThrowing",
+            "benchmarkFunction<SortShuffle<thrust::device_vector<DataType"
+            ">>>1": "SortShuffle",
+        },
+        "BijectiveComparison": {
+            "benchmarkScatterGather<GatherShuffle<thrust::device_vector<DataType>>>1": "Gather",
+            "benchmarkFunction<BasicPhiloxBijectiveScanShuffle<>>1": "Bijective0",
+            "benchmarkFunction<TwoPassPhiloxBijectiveScanShuffle<>>1": "Bijective1",
+            "benchmarkFunction<PhiloxBijectiveScanShuffle<>>1": "Bijective2",
+            "benchmarkFunction<PhiloxBijectiveScanShuffle<>>0": "Bijective2(n=m)",
+        },
+        "CPUShuffle": {
+            "benchmarkScatterGather<GatherShuffle<thrust::host_vector<DataType>>>1": "Gather",
+            "benchmarkFunction<PhiloxBijectiveScanShuffle<thrust::tbb::vector<DataType"
+            ">>>1": "VarPhilox",
+            "benchmarkFunction<HostDartThrowing<std::vector<DataType>>>1": "DartThrowing",
+            "benchmarkFunction<StdShuffle<std::vector<DataType>>>1": "std::shuffle",
+            "benchmarkFunction<RaoSandeliusShuffle<std::vector<DataType>>>1": "RS",
+            "benchmarkFunction<MergeShuffle<std::vector<DataType>>>1": "MergeShuffle",
+            "benchmarkFunction<SortShuffle<thrust::host_vector<DataType>>>1": "SortShuffle",
+        },
+    }
 
     unique_algorithms = [x for v in experiments.values() for x in v.keys()]
-    rs=np.random.RandomState(235)
-    palette=sns.color_palette("tab20", n_colors=len(unique_algorithms))
-    rs.shuffle(palette
-               )
-    colours = OrderedDict((alg, col) for (alg, col) in
-               zip(unique_algorithms, palette))
+    rs = np.random.RandomState(235)
+    palette = sns.color_palette("tab20", n_colors=len(unique_algorithms))
+    rs.shuffle(palette)
+    colours = OrderedDict((alg, col) for (alg, col) in zip(unique_algorithms, palette))
     print(colours)
     sns.set_style("whitegrid")
     for name, keys in experiments.items():

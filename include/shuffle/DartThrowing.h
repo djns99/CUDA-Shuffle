@@ -181,7 +181,8 @@ public:
 
 #pragma omp parallel for
         for( uint64_t i = 0; i < num_targets; i += 32 )
-            std::fill( temp_storage.begin() + i, temp_storage.begin() + std::min( i + 32, num_targets ), UINT64_MAX );
+            std::fill( temp_storage.begin() + i,
+                       temp_storage.begin() + std::min( i + 32, num_targets ), UINT64_MAX );
 
 
         uint64_t num_threads = std::thread::hardware_concurrency();

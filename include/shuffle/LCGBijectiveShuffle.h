@@ -36,6 +36,7 @@ public:
     {
         return true;
     }
+
 private:
     static uint64_t roundUpPower2( uint64_t a )
     {

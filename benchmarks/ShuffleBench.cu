@@ -11,6 +11,7 @@
 #include "shuffle/PhiloxShuffle.h"
 #include "shuffle/NoOpBijectiveShuffle.h"
 #include "shuffle/RaoSandeliusShuffle.h"
+#include "shuffle/SortShuffle.h"
 #include "shuffle/StdShuffle.h"
 #include <benchmark/benchmark.h>
 #include <cmath>
@@ -33,8 +34,7 @@ static void benchmarkScatterGather( benchmark::State& state )
     ContainerType in_container( num_to_shuffle );
     ContainerType out_container( num_to_shuffle );
 
-    // Use bijective shuffle since it is fastest and still strongly random
-    FeistelBijectiveShuffle<ContainerType> temp_shuffler;
+    PhiloxBijectiveScanShuffle<ContainerType> temp_shuffler;
     thrust::sequence( out_container.begin(), out_container.end() );
 
     int seed = 0;
@@ -110,15 +110,9 @@ static void argsGenerator( benchmark::internal::Benchmark* b )
     }
 }
 
-BENCHMARK_TEMPLATE( benchmarkFunction,
-                    PhiloxBijectiveScanShuffle<> )
-    ->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction,
-                    BasicPhiloxBijectiveScanShuffle<> )
-    ->Apply( argsGenerator );
-BENCHMARK_TEMPLATE( benchmarkFunction,
-                    TwoPassPhiloxBijectiveScanShuffle<> )
-    ->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, PhiloxBijectiveScanShuffle<> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, BasicPhiloxBijectiveScanShuffle<> )->Apply( argsGenerator );
+BENCHMARK_TEMPLATE( benchmarkFunction, TwoPassPhiloxBijectiveScanShuffle<> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, LCGBijectiveScanShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
 
 BENCHMARK_TEMPLATE( benchmarkFunction, PhiloxBijectiveScanShuffle<thrust::tbb::vector<DataType>> )->Apply( argsGenerator );
@@ -134,7 +128,9 @@ BENCHMARK_TEMPLATE( benchmarkFunction, RaoSandeliusShuffle<std::vector<DataType>
 BENCHMARK_TEMPLATE( benchmarkFunction, StdShuffle<std::vector<DataType>> )->Apply( argsGenerator );
 BENCHMARK_TEMPLATE( benchmarkFunction, SortShuffle<thrust::host_vector<DataType>> )->Apply( argsGenerator );
 
+#ifndef HOST_BENCH
 BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::device_vector<DataType>> )->Apply( argsGenerator );
+#endif
 BENCHMARK_TEMPLATE( benchmarkScatterGather, GatherShuffle<thrust::host_vector<DataType>> )->Apply( argsGenerator );
 
 BENCHMARK_MAIN();

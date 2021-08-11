@@ -58,9 +58,7 @@ private:
         else
         {
             RandomGenerator local_g( g );
-            std::thread t( [=, &local_g]() {
-                raoSandeliusShuffle( begin, i, local_g );
-            } );
+            std::thread t( [=, &local_g]() { raoSandeliusShuffle( begin, i, local_g ); } );
             raoSandeliusShuffle( i, end, g );
             t.join();
         }
