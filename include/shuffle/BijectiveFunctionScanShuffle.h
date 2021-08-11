@@ -3,6 +3,8 @@
 #include "ThrustInclude.h"
 #include "shuffle/Shuffle.h"
 #include <cuda.h>
+#include <moderngpu/kernel_compact.hxx>
+#include <moderngpu/kernel_scan.hxx>
 #include <numeric>
 
 namespace BijectiveScanFuncs
@@ -54,7 +56,7 @@ struct KeyFlagTuple
 
 struct ScanOp
 {
-    __host__ __device__ KeyFlagTuple operator()( const KeyFlagTuple& a, const KeyFlagTuple& b )
+    __host__ __device__ KeyFlagTuple operator()( const KeyFlagTuple& a, const KeyFlagTuple& b ) const
     {
         return { b.key, a.flag + b.flag };
     }
@@ -86,7 +88,7 @@ struct MakeTupleFunctor
         : m( m ), mapping_function( mapping_function )
     {
     }
-    __host__ __device__ KeyFlagTuple operator()( uint64_t idx )
+    __host__ __device__ KeyFlagTuple operator()( uint64_t idx ) const
     {
         auto gather_key = mapping_function( idx );
         return KeyFlagTuple{ gather_key, gather_key < m };
@@ -95,6 +97,7 @@ struct MakeTupleFunctor
 
 } // namespace BijectiveScanFuncs
 
+// Fastest implementation
 template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 class BijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerator>
 {
@@ -142,6 +145,84 @@ public:
             thrust::system::tbb::detail::inclusive_scan( thrust::tbb::par, tuple.begin(),
                                                          tuple.begin() + capacity, output_it, ScanOp() );
         }
+    }
+
+    bool supportsInPlace() const override
+    {
+        return false;
+    }
+};
+
+// Most basic implementation. For comparison purposes only.
+template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+class BasicBijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerator>
+{
+    mgpu::standard_context_t context;
+
+public:
+    void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
+    {
+        using namespace BijectiveScanFuncs;
+        assert( &in_container != &out_container );
+
+        RandomGenerator random_function( seed );
+        BijectiveFunction mapping_function;
+        mapping_function.init( num, random_function );
+        uint64_t capacity = mapping_function.getMappingRange();
+        auto m = num;
+        thrust::counting_iterator<uint64_t> indices( 0 );
+        thrust::device_vector<uint64_t> bijection( capacity );
+        thrust::transform( indices, indices + capacity, bijection.begin(), mapping_function );
+        thrust::device_vector<uint64_t> compacted_bijection( num );
+        auto d_bijection = bijection.data();
+        auto compact = mgpu::transform_compact( capacity, context );
+        int stream_count =
+            compact.upsweep( [=] __device__( uint64_t idx ) { return d_bijection[idx] < m; } );
+        auto d_compacted_bijection = compacted_bijection.data();
+        compact.downsweep( [=] __device__( int dest_index, int source_index ) {
+            d_compacted_bijection[dest_index] = d_bijection[source_index];
+        } );
+        thrust::gather( compacted_bijection.begin(), compacted_bijection.end(),
+                        in_container.begin(), out_container.begin() );
+    }
+
+    bool supportsInPlace() const override
+    {
+        return false;
+    }
+};
+
+// Scan with two passes. For comparison purposes only.
+template <class BijectiveFunction, class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
+class MGPUBijectiveFunctionScanShuffle : public Shuffle<ContainerType, RandomGenerator>
+{
+    mgpu::standard_context_t context;
+
+public:
+    void shuffle( const ContainerType& in_container, ContainerType& out_container, uint64_t seed, uint64_t num ) override
+    {
+        using namespace BijectiveScanFuncs;
+        assert( &in_container != &out_container );
+
+        RandomGenerator random_function( seed );
+        BijectiveFunction mapping_function;
+        mapping_function.init( num, random_function );
+        uint64_t capacity = mapping_function.getMappingRange();
+
+        size_t m = num;
+
+        WritePermutationFunctor<decltype( in_container.begin() ), decltype( out_container.begin() )> write_functor{
+            m, in_container.begin(), out_container.begin()
+        };
+        auto output_it =
+            thrust::make_transform_output_iterator( thrust::discard_iterator<uint64_t>(), write_functor );
+        MakeTupleFunctor<BijectiveFunction> f( m, mapping_function );
+        auto MGpuScanOp = [=] __device__( const KeyFlagTuple& a, const KeyFlagTuple& b ) {
+            return KeyFlagTuple{ a.key, a.flag + b.flag };
+        };
+        mgpu::transform_scan<KeyFlagTuple, mgpu::scan_type_inc>( f, capacity, output_it, MGpuScanOp,
+                                                                 thrust::discard_iterator<KeyFlagTuple>(),
+                                                                 context );
     }
 
     bool supportsInPlace() const override

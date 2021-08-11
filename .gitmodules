@@ -4,3 +4,6 @@
 [submodule "vendor/google/benchmark"]
 	path = vendor/google/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "vendor/moderngpu"]
+	path = vendor/moderngpu
+	url = https://github.com/moderngpu/moderngpu.git

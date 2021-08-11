@@ -1,8 +1,5 @@
 #pragma once
-#include "shuffle/BijectiveFunctionCompressor.h"
 #include "shuffle/BijectiveFunctionScanShuffle.h"
-#include "shuffle/BijectiveFunctionShuffle.h"
-#include "shuffle/BijectiveFunctionSortShuffle.h"
 
 class LCGBijectiveFunction
 {
@@ -36,6 +33,7 @@ public:
     {
         return true;
     }
+
 private:
     static uint64_t roundUpPower2( uint64_t a )
     {
@@ -55,14 +53,6 @@ private:
     uint64_t multiplier;
     uint64_t addition;
 };
-
-template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-using LCGBijectiveShuffle =
-    BijectiveFunctionShuffle<BijectiveFunctionCompressor<LCGBijectiveFunction>, ContainerType, RandomGenerator>;
-
-template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
-using LCGBijectiveSortShuffle =
-    BijectiveFunctionSortShuffle<LCGBijectiveFunction, ContainerType, RandomGenerator>;
 
 template <class ContainerType = thrust::device_vector<uint64_t>, class RandomGenerator = DefaultRandomGenerator>
 using LCGBijectiveScanShuffle =

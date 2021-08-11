@@ -1,7 +1,38 @@
 CUDA Shuffle
 ============
 
-Implementation of GPU Shuffle using Bijective Functions
+Code and experiments for the paper [Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/abs/2106.06161)
+```
+@misc{mitchell2021bandwidthoptimal,
+      title={Bandwidth-Optimal Random Shuffling for GPUs}, 
+      author={Rory Mitchell and Daniel Stokes and Eibe Frank and Geoffrey Holmes},
+      year={2021},
+      eprint={2106.06161},
+      archivePrefix={arXiv},
+      primaryClass={cs.DC}
+}
+```
+
+Running the experiments
+----------------
+This workflow has been tested on the following environment.
+```
+Ubuntu 18.04
+CUDA 11.2
+g++ 7.5
+cmake 3.20.5
+conda 4.10.1 with packages:
+- tbb=2020.3
+- matplotlib
+- seaborn
+```
+
+Run the following script:
+```bash
+sh run_experiments.sh
+```
+which is expected to compile benchmarks, run the benchmarks, and present the results as figures saved in the source directory.
+
 
 Acknowledgements
 ----------------
@@ -14,5 +45,5 @@ http://arxiv.org/abs/1508.03167
 Implementation in `MergeShuffle.h` and `RaoSandeliusShuffle.h` is adapted from:
 https://github.com/axel-bacher/mergeshuffle
 
-WyHash Version 4 used for FeistelNetwork adapted from:
+WyHash Version 4:
 https://github.com/wangyi-fudan/wyhash
