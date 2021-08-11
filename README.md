@@ -15,6 +15,11 @@ Code and experiments for the paper [Bandwidth-Optimal Random Shuffling for GPUs]
 
 Running the experiments
 ----------------
+Clone this repository recursively, so that submodules are included:
+```bash
+git clone https://github.com/djns99/CUDA-Shuffle.git --recursive
+```
+
 This workflow has been tested on the following environment.
 ```
 Ubuntu 18.04
