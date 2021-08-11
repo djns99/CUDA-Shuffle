@@ -2,6 +2,7 @@
 
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include <thrust/execution_policy.h>
 #include <thrust/gather.h>
 #include <thrust/iterator/discard_iterator.h>
