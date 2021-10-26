@@ -53,7 +53,7 @@ int main( int argc, char** argv )
 {
     printf( "Algorithm,$\\chi^2$,Rounds\n" );
     size_t n = 5;
-    const int begin_round = 14;
+    const int begin_round = 6;
     const int end_round = 30;
     size_t num_samples = atoi( argv[1] );
     {
