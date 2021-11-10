@@ -37,7 +37,10 @@ def get_data_as_dict():
             if run_name not in results:
                 results[run_name] = {}
             assert size not in results[run_name]
-            results[run_name][size] = mean["items_per_second"] / 1e6
+            results[run_name][size] = (
+                mean["items_per_second"] / 1e6,
+                mean["real_time"] / 1e9,
+            )
     return results
 
 
@@ -47,7 +50,7 @@ def plot_algorithms(name, results, key, colour_map):
     df = pd.DataFrame(index=index)
     for test_name in filtered_results.keys():
         test_res = OrderedDict(sorted(filtered_results[test_name].items()))
-        df[test_name] = test_res.values()
+        df[test_name] = list(zip(*test_res.values()))[0]
 
     colours = [colour_map[k] for k in key.keys()]
     sns.set_palette(colours)
@@ -70,6 +73,26 @@ def plot_algorithms(name, results, key, colour_map):
         df.to_latex(
             float_format="%.2f", column_format="r" * (len(df) + 1), escape=False
         )
+    )
+
+    runtime_df = pd.DataFrame(index=index)
+    for test_name in filtered_results.keys():
+        test_res = OrderedDict(sorted(filtered_results[test_name].items()))
+        runtime_df[test_name] = list(zip(*test_res.values()))[1]
+    print(runtime_df)
+    plt.clf()
+    plt.figure(figsize=(6, 4.5))
+    sns.lineplot(data=runtime_df, markers=True)
+    plt.xlabel("Input Size")
+    plt.ylabel("Runtime (s)")
+    plt.xscale("log", basex=2)
+    plt.yscale("log")
+    plt.legend()
+    ax = plt.subplot(111)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    plt.savefig(
+        name + "_runtime.png", orientation="landscape", bbox_inches="tight", dpi=1000
     )
 
 
@@ -110,7 +133,6 @@ def main():
     palette = sns.color_palette("tab20", n_colors=len(unique_algorithms))
     rs.shuffle(palette)
     colours = OrderedDict((alg, col) for (alg, col) in zip(unique_algorithms, palette))
-    print(colours)
     sns.set_style("whitegrid")
     for name, keys in experiments.items():
         plot_algorithms(name, results, keys, colours)
